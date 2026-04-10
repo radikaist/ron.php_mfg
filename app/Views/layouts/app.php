@@ -14,6 +14,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         :root {
             --sidebar-width: 280px;
             --topbar-height: 72px;
+            --footer-height: 58px;
 
             --primary: #3b82f6;
             --primary-2: #06b6d4;
@@ -61,6 +62,10 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             text-decoration: none;
         }
 
+        .layout {
+            min-height: 100vh;
+        }
+
         .topbar {
             position: fixed;
             top: 0;
@@ -74,7 +79,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             align-items: center;
             justify-content: space-between;
             padding: 0 24px;
-            z-index: 999;
+            z-index: 1001;
             box-shadow: 0 10px 26px rgba(59,130,246,.05);
         }
 
@@ -82,6 +87,20 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             display: flex;
             align-items: center;
             gap: 14px;
+        }
+
+        .sidebar-toggle {
+            border: none;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            color: #fff;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+            font-weight: 700;
+            box-shadow: 0 12px 20px rgba(59,130,246,.18);
         }
 
         .brand {
@@ -129,6 +148,14 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             box-shadow: 0 12px 20px rgba(239,68,68,.18);
         }
 
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .35);
+            z-index: 999;
+        }
+
         .sidebar {
             position: fixed;
             top: var(--topbar-height);
@@ -139,6 +166,8 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             border-right: 1px solid var(--sidebar-border);
             padding: 20px 16px;
             overflow-y: auto;
+            z-index: 1000;
+            transition: transform .28s ease, width .28s ease;
         }
 
         .sidebar-card {
@@ -211,6 +240,13 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             margin-left: var(--sidebar-width);
             padding-top: var(--topbar-height);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left .28s ease;
+        }
+
+        .main-inner {
+            flex: 1;
         }
 
         .content-header {
@@ -373,7 +409,6 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             background: rgba(239,246,255,.72);
             color: #0f172a;
             font-weight: 800;
-            border-radius: 12px 12px 0 0;
         }
 
         .info-list {
@@ -439,6 +474,33 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             max-width: 900px;
         }
 
+        .footer {
+            margin-top: auto;
+            min-height: var(--footer-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 28px;
+            border-top: 1px solid rgba(219,234,254,.8);
+            background: rgba(255,255,255,.55);
+            backdrop-filter: blur(10px);
+            color: #475569;
+            font-size: 13px;
+        }
+
+        .footer strong {
+            color: #0f172a;
+        }
+
+        body.sidebar-collapsed .sidebar {
+            transform: translateX(calc(-1 * var(--sidebar-width)));
+        }
+
+        body.sidebar-collapsed .main {
+            margin-left: 0;
+        }
+
         @media (max-width: 1200px) {
             .col-3, .col-4, .col-5, .col-6, .col-7, .col-8 {
                 grid-column: span 12;
@@ -447,11 +509,19 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
         @media (max-width: 900px) {
             .sidebar {
-                width: 240px;
+                transform: translateX(calc(-1 * var(--sidebar-width)));
             }
 
             .main {
-                margin-left: 240px;
+                margin-left: 0;
+            }
+
+            body.sidebar-open .sidebar {
+                transform: translateX(0);
+            }
+
+            body.sidebar-open .sidebar-overlay {
+                display: block;
             }
 
             .content-title {
@@ -461,93 +531,137 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
         @media (max-width: 768px) {
             .topbar {
-                position: static;
-                height: auto;
-                padding: 14px;
-                gap: 12px;
-                flex-direction: column;
-                align-items: flex-start;
+                padding: 12px 16px;
             }
 
-            .sidebar {
-                position: static;
-                width: 100%;
-                height: auto;
+            .brand {
+                font-size: 24px;
             }
 
-            .main {
-                margin-left: 0;
-                padding-top: 0;
+            .topbar-user {
+                display: none;
             }
 
             .content-header,
-            .content-body {
+            .content-body,
+            .footer {
                 padding-left: 16px;
                 padding-right: 16px;
+            }
+
+            .footer {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
 </head>
 <body>
-    <header class="topbar">
-        <div class="topbar-left">
-            <div class="brand">RON <span>MFG</span></div>
-        </div>
-
-        <div class="topbar-right">
-            <?php if ($user): ?>
-                <div class="topbar-user">
-                    Login sebagai <strong><?= e($user['name'] ?? '-') ?></strong>
-                </div>
-                <form class="logout-form" action="<?= e(base_url('logout')) ?>" method="POST">
-                    <?= csrf_field() ?>
-                    <button class="logout-btn" type="submit">Logout</button>
-                </form>
-            <?php endif; ?>
-        </div>
-    </header>
-
-    <aside class="sidebar">
-        <div class="sidebar-card">
-            <div class="sidebar-user-name"><?= e($user['name'] ?? '-') ?></div>
-            <div class="sidebar-user-role">
-                <?= !empty($user['roles']) ? e(implode(', ', $user['roles'])) : 'No role assigned' ?>
+    <div class="layout">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button type="button" class="sidebar-toggle" id="sidebarToggle">☰</button>
+                <div class="brand">RON <span>MFG</span></div>
             </div>
-        </div>
 
-        <div class="sidebar-section">Navigation</div>
-        <ul class="sidebar-menu">
-            <?php foreach ($menus as $index => $menu): ?>
-                <?php
-                $menuPath = parse_url($menu['url'], PHP_URL_PATH) ?: '';
-                $isActive = $menuPath === $currentPath;
-                ?>
-                <li>
-                    <a href="<?= e($menu['url']) ?>" class="<?= $isActive ? 'active' : '' ?>">
-                        <?= e($menu['title']) ?>
-                    </a>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    </aside>
+            <div class="topbar-right">
+                <?php if ($user): ?>
+                    <div class="topbar-user">
+                        Login sebagai <strong><?= e($user['name'] ?? '-') ?></strong>
+                    </div>
+                    <form class="logout-form" action="<?= e(base_url('logout')) ?>" method="POST">
+                        <?= csrf_field() ?>
+                        <button class="logout-btn" type="submit">Logout</button>
+                    </form>
+                <?php endif; ?>
+            </div>
+        </header>
 
-    <main class="main">
-        <div class="content-header">
-            <h1 class="content-title"><?= e($title ?? 'Dashboard') ?></h1>
-            <div class="content-subtitle">Bright Native PHP MVC Framework with Dynamic RBAC for Manufacturing System</div>
-        </div>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <div class="content-body">
-            <?php if ($success = flash_get('success')): ?>
-                <div class="alert alert-success"><?= e($success) ?></div>
-            <?php endif; ?>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-card">
+                <div class="sidebar-user-name"><?= e($user['name'] ?? '-') ?></div>
+                <div class="sidebar-user-role">
+                    <?= !empty($user['roles']) ? e(implode(', ', $user['roles'])) : 'No role assigned' ?>
+                </div>
+            </div>
 
-            <?php if ($error = flash_get('error')): ?>
-                <div class="alert alert-danger"><?= e($error) ?></div>
-            <?php endif; ?>
+            <div class="sidebar-section">Navigation</div>
+            <ul class="sidebar-menu">
+                <?php foreach ($menus as $menu): ?>
+                    <?php
+                    $menuPath = parse_url($menu['url'], PHP_URL_PATH) ?: '';
+                    $isActive = $menuPath === $currentPath;
+                    ?>
+                    <li>
+                        <a href="<?= e($menu['url']) ?>" class="<?= $isActive ? 'active' : '' ?>">
+                            <?= e($menu['title']) ?>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </aside>
 
-            <?= $content ?>
-        </div>
-    </main>
+        <main class="main">
+            <div class="main-inner">
+                <div class="content-header">
+                    <h1 class="content-title"><?= e($title ?? 'Dashboard') ?></h1>
+                    <div class="content-subtitle">Bright Native PHP MVC Framework with Dynamic RBAC for Manufacturing System</div>
+                </div>
+
+                <div class="content-body">
+                    <?php if ($success = flash_get('success')): ?>
+                        <div class="alert alert-success"><?= e($success) ?></div>
+                    <?php endif; ?>
+
+                    <?php if ($error = flash_get('error')): ?>
+                        <div class="alert alert-danger"><?= e($error) ?></div>
+                    <?php endif; ?>
+
+                    <?= $content ?>
+                </div>
+            </div>
+
+            <footer class="footer">
+                <div>
+                    &copy; <?= date('Y') ?> <strong><?= e($appName) ?></strong>. All rights reserved.
+                </div>
+                <div>
+                    Bright UI • Native PHP MVC • Dynamic RBAC • Manufacturing Ready
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        (function () {
+            const body = document.body;
+            const toggle = document.getElementById('sidebarToggle');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            function isMobile() {
+                return window.innerWidth <= 900;
+            }
+
+            toggle.addEventListener('click', function () {
+                if (isMobile()) {
+                    body.classList.toggle('sidebar-open');
+                } else {
+                    body.classList.toggle('sidebar-collapsed');
+                }
+            });
+
+            overlay.addEventListener('click', function () {
+                body.classList.remove('sidebar-open');
+            });
+
+            window.addEventListener('resize', function () {
+                if (!isMobile()) {
+                    body.classList.remove('sidebar-open');
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
