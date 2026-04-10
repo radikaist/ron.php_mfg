@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Core\Model;
+use PDOException;
 
 class User extends Model
 {
@@ -63,5 +64,67 @@ class User extends Model
         $user['permissions'] = !empty($user['permissions']) ? explode(',', $user['permissions']) : [];
 
         return $user;
+    }
+
+    public function all(): array
+    {
+        $sql = "
+            SELECT 
+                u.id,
+                u.name,
+                u.username,
+                u.email,
+                u.is_active,
+                GROUP_CONCAT(DISTINCT r.name ORDER BY r.name SEPARATOR ', ') AS role_names
+            FROM users u
+            LEFT JOIN user_roles ur ON ur.user_id = u.id
+            LEFT JOIN roles r ON r.id = ur.role_id
+            GROUP BY u.id, u.name, u.username, u.email, u.is_active
+            ORDER BY u.id DESC
+        ";
+
+        return $this->db->query($sql)->fetchAll();
+    }
+
+    public function create(array $data): int|false
+    {
+        try {
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare("
+                INSERT INTO users (name, username, email, password, is_active)
+                VALUES (:name, :username, :email, :password, :is_active)
+            ");
+
+            $stmt->execute([
+                'name' => $data['name'],
+                'username' => $data['username'],
+                'email' => $data['email'] ?: null,
+                'password' => password_hash($data['password'], PASSWORD_DEFAULT),
+                'is_active' => $data['is_active'],
+            ]);
+
+            $userId = (int) $this->db->lastInsertId();
+
+            if (!empty($data['role_ids'])) {
+                $roleStmt = $this->db->prepare("
+                    INSERT INTO user_roles (user_id, role_id)
+                    VALUES (:user_id, :role_id)
+                ");
+
+                foreach ($data['role_ids'] as $roleId) {
+                    $roleStmt->execute([
+                        'user_id' => $userId,
+                        'role_id' => (int) $roleId,
+                    ]);
+                }
+            }
+
+            $this->db->commit();
+            return $userId;
+        } catch (PDOException $e) {
+            $this->db->rollBack();
+            return false;
+        }
     }
 }

@@ -4,8 +4,7 @@
     </div>
     <div class="welcome-desc">
         Dashboard ini adalah fondasi awal framework manufaktur berbasis PHP Native, MVC, MySQL, dan Dynamic RBAC.
-        Pada fase ini, antarmuka telah ditingkatkan dengan tampilan yang lebih segar, ikon navigasi, breadcrumb,
-        quick actions, dan dukungan pergantian tema agar pengalaman penggunaan lebih nyaman.
+        Pada fase ini, sistem sudah memiliki modul master dasar untuk user, role, dan permission.
     </div>
 </div>
 
@@ -13,32 +12,32 @@
     <a class="quick-action" href="<?= e(base_url('users')) ?>">
         <div class="quick-action-icon qa-blue">👤</div>
         <div>
-            <div class="quick-action-title">Kelola User</div>
-            <div class="quick-action-desc">Buka halaman pengelolaan pengguna sistem.</div>
+            <div class="quick-action-title">Master User</div>
+            <div class="quick-action-desc">Lihat dan kelola daftar user sistem.</div>
+        </div>
+    </a>
+
+    <a class="quick-action" href="<?= e(base_url('users/create')) ?>">
+        <div class="quick-action-icon qa-green">➕</div>
+        <div>
+            <div class="quick-action-title">Tambah User</div>
+            <div class="quick-action-desc">Buat user baru dan assign role.</div>
         </div>
     </a>
 
     <a class="quick-action" href="<?= e(base_url('roles')) ?>">
-        <div class="quick-action-icon qa-green">🛡️</div>
+        <div class="quick-action-icon qa-orange">🛡️</div>
         <div>
-            <div class="quick-action-title">Kelola Role</div>
-            <div class="quick-action-desc">Atur role dan struktur akses pengguna.</div>
+            <div class="quick-action-title">Master Role</div>
+            <div class="quick-action-desc">Lihat struktur role dalam sistem.</div>
         </div>
     </a>
 
     <a class="quick-action" href="<?= e(base_url('permissions')) ?>">
-        <div class="quick-action-icon qa-orange">🔑</div>
+        <div class="quick-action-icon qa-pink">🔑</div>
         <div>
-            <div class="quick-action-title">Lihat Permission</div>
-            <div class="quick-action-desc">Pantau permission dan kontrol akses modul.</div>
-        </div>
-    </a>
-
-    <a class="quick-action" href="<?= e(base_url('inventory')) ?>">
-        <div class="quick-action-icon qa-pink">📦</div>
-        <div>
-            <div class="quick-action-title">Inventory</div>
-            <div class="quick-action-desc">Akses modul stok, mutasi, dan gudang.</div>
+            <div class="quick-action-title">Master Permission</div>
+            <div class="quick-action-desc">Lihat seluruh permission yang tersedia.</div>
         </div>
     </a>
 </div>
@@ -66,7 +65,7 @@
         <div class="small-box bg-orange">
             <div class="label">Framework Status</div>
             <div class="value">OK</div>
-            <div class="desc">MVC, Auth, RBAC, layout, dan UI enhancement berjalan baik.</div>
+            <div class="desc">MVC, Auth, RBAC, layout, dan master data dasar berjalan baik.</div>
             <div class="mini">System stable</div>
         </div>
     </div>
@@ -136,9 +135,8 @@
             <div class="card-header">Quick Notes</div>
             <div class="card-body">
                 <div class="muted" style="line-height:1.8;">
-                    Tahap berikutnya yang disarankan adalah membangun master data
-                    <strong>User</strong>, <strong>Role</strong>, dan <strong>Permission</strong>,
-                    lalu lanjut ke modul manufaktur seperti inventory, production order, dan quality control.
+                    Tahap berikutnya yang disarankan adalah menambahkan fitur edit user, assign permission ke role,
+                    lalu mulai membangun master data manufaktur seperti gudang, item, supplier, dan work center.
                 </div>
             </div>
         </div>
@@ -199,18 +197,18 @@
                         </tr>
                         <tr>
                             <td>Bright Admin UI</td>
-                            <td>Tampilan cerah, segar, modern, sidebar toggle, footer, halaman error, theme switch</td>
+                            <td>Tampilan cerah, segar, modern, sidebar toggle, footer, error page, theme switch</td>
                             <td><span class="badge badge-pink">Selesai</span></td>
                         </tr>
                         <tr>
-                            <td>Master Data</td>
-                            <td>User, role, permission, departemen, gudang, item, supplier</td>
-                            <td><span class="badge badge-sky">Next Phase</span></td>
+                            <td>Master User / Role / Permission</td>
+                            <td>Daftar user, tambah user, daftar role, daftar permission</td>
+                            <td><span class="badge badge-green">Selesai Dasar</span></td>
                         </tr>
                         <tr>
                             <td>Manufacturing Modules</td>
-                            <td>Production order, inventory, QC, purchasing, reporting</td>
-                            <td><span class="badge badge-green">Planned</span></td>
+                            <td>Inventory, production order, QC, purchasing, reporting</td>
+                            <td><span class="badge badge-sky">Next Phase</span></td>
                         </tr>
                     </tbody>
                 </table>

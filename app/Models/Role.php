@@ -8,42 +8,32 @@ use Core\Model;
 
 class Role extends Model
 {
-    public function getUserRoles(int|string $userId): array
+    public function all(): array
     {
-        $stmt = $this->db->prepare("
-            SELECT r.*
+        $sql = "
+            SELECT 
+                r.*,
+                COUNT(DISTINCT ur.user_id) AS total_users,
+                COUNT(DISTINCT rp.permission_id) AS total_permissions
             FROM roles r
-            INNER JOIN user_roles ur ON ur.role_id = r.id
-            WHERE ur.user_id = :user_id
-              AND r.is_active = 1
-            ORDER BY r.name ASC
-        ");
+            LEFT JOIN user_roles ur ON ur.role_id = r.id
+            LEFT JOIN role_permissions rp ON rp.role_id = r.id
+            GROUP BY r.id, r.name, r.code, r.description, r.is_active, r.created_at, r.updated_at
+            ORDER BY r.id ASC
+        ";
 
-        $stmt->execute([
-            'user_id' => $userId,
-        ]);
-
-        return $stmt->fetchAll();
+        return $this->db->query($sql)->fetchAll();
     }
 
-    public function userHasRole(int|string $userId, string $roleCode): bool
+    public function activeOptions(): array
     {
-        $stmt = $this->db->prepare("
-            SELECT COUNT(*) AS total
-            FROM roles r
-            INNER JOIN user_roles ur ON ur.role_id = r.id
-            WHERE ur.user_id = :user_id
-              AND r.code = :role_code
-              AND r.is_active = 1
+        $stmt = $this->db->query("
+            SELECT id, name, code
+            FROM roles
+            WHERE is_active = 1
+            ORDER BY name ASC
         ");
 
-        $stmt->execute([
-            'user_id' => $userId,
-            'role_code' => $roleCode,
-        ]);
-
-        $row = $stmt->fetch();
-
-        return (int) ($row['total'] ?? 0) > 0;
+        return $stmt->fetchAll();
     }
 }
