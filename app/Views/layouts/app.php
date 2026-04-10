@@ -44,6 +44,10 @@ $toastError = flash_get('error');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle) ?></title>
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
         :root {
             --sidebar-width: 300px;
             --topbar-height: 72px;
@@ -421,6 +425,7 @@ $toastError = flash_get('error');
             border: 1px solid var(--card-border);
             box-shadow: var(--card-shadow);
             overflow: hidden;
+            scroll-margin-top: 95px;
         }
 
         .card-header {
@@ -861,22 +866,6 @@ $toastError = flash_get('error');
                 }, 2800);
             }
 
-            document.querySelectorAll('[data-table-filter]').forEach(function (input) {
-                input.addEventListener('input', function () {
-                    const keyword = input.value.toLowerCase().trim();
-                    const tableId = input.getAttribute('data-table-filter');
-                    const table = document.getElementById(tableId);
-
-                    if (!table) return;
-
-                    table.querySelectorAll('tbody tr').forEach(function (row) {
-                        if (row.classList.contains('empty-row')) return;
-                        const text = row.innerText.toLowerCase();
-                        row.style.display = text.includes(keyword) ? '' : 'none';
-                    });
-                });
-            });
-
             document.querySelectorAll('.sortable-table').forEach(function (table) {
                 const headers = table.querySelectorAll('thead th');
 
@@ -913,6 +902,20 @@ $toastError = flash_get('error');
                     });
                 });
             });
+
+            if (window.location.hash) {
+                window.addEventListener('load', function () {
+                    const target = document.querySelector(window.location.hash);
+                    if (target) {
+                        setTimeout(function () {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }, 80);
+                    }
+                });
+            }
         })();
     </script>
 </body>
