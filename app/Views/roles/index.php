@@ -13,9 +13,10 @@ foreach (($roles ?? []) as $row) {
 $currentPage = (int) ($pagination['page'] ?? 1);
 $perPage = (int) ($pagination['per_page'] ?? 5);
 $totalPages = (int) ($pagination['total_pages'] ?? 1);
+$search = (string) ($pagination['search'] ?? '');
 
-function roles_page_url(int $page, int $perPage): string {
-    return base_url('roles?page=' . $page . '&per_page=' . $perPage);
+function roles_page_url(int $page, int $perPage, string $search): string {
+    return base_url('roles?page=' . $page . '&per_page=' . $perPage . '&search=' . urlencode($search));
 }
 ?>
 
@@ -24,15 +25,15 @@ function roles_page_url(int $page, int $perPage): string {
         <div class="small-box bg-pink">
             <div class="label">Total Roles</div>
             <div class="value"><?= e((string) $totalRoles) ?></div>
-            <div class="desc">Jumlah seluruh role yang tersedia.</div>
-            <div class="mini">RBAC Role Layer</div>
+            <div class="desc">Jumlah hasil role sesuai filter pencarian.</div>
+            <div class="mini">Filtered Result</div>
         </div>
     </div>
     <div class="col-4">
         <div class="small-box bg-green">
             <div class="label">Active Roles</div>
             <div class="value"><?= e((string) $activeRoles) ?></div>
-            <div class="desc">Role aktif yang tampil di halaman ini.</div>
+            <div class="desc">Role aktif pada halaman saat ini.</div>
             <div class="mini">Current Page</div>
         </div>
     </div>
@@ -40,8 +41,8 @@ function roles_page_url(int $page, int $perPage): string {
         <div class="small-box bg-orange">
             <div class="label">Mapped Permissions</div>
             <div class="value"><?= e((string) $totalMappedPermissions) ?></div>
-            <div class="desc">Total permission mapped pada data halaman ini.</div>
-            <div class="mini">Permission Matrix</div>
+            <div class="desc">Jumlah relasi permission pada halaman saat ini.</div>
+            <div class="mini">Current Page</div>
         </div>
     </div>
 </div>
@@ -60,25 +61,31 @@ function roles_page_url(int $page, int $perPage): string {
     <div class="card-header">Daftar Role</div>
     <div class="card-body">
         <div class="toolbar">
-            <div class="search-box">
-                <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Cari role, code, description..."
-                    data-table-filter="rolesTable"
-                >
-            </div>
+            <form method="GET" action="<?= e(base_url('roles')) ?>" style="display:flex; gap:10px; flex-wrap:wrap; width:100%;">
+                <div class="search-box">
+                    <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Cari role, code, description..."
+                        name="search"
+                        value="<?= e($search) ?>"
+                    >
+                </div>
 
-            <form method="GET" action="<?= e(base_url('roles')) ?>" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <label class="muted">Tampilkan</label>
-                <select name="per_page" class="form-select" style="width:auto;" onchange="this.form.submit()">
+                <select name="per_page" class="form-select" style="width:auto;">
                     <?php foreach ([5, 10, 20, 50, 100] as $size): ?>
                         <option value="<?= e((string) $size) ?>" <?= $perPage === $size ? 'selected' : '' ?>>
                             <?= e((string) $size) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
+
                 <input type="hidden" name="page" value="1">
+                <button type="submit" class="btn btn-primary">Cari</button>
+
+                <?php if ($search !== ''): ?>
+                    <a href="<?= e(base_url('roles')) ?>" class="btn-outline">Reset</a>
+                <?php endif; ?>
             </form>
         </div>
 
@@ -119,7 +126,7 @@ function roles_page_url(int $page, int $perPage): string {
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr class="empty-row">
-                        <td colspan="8" class="muted">Belum ada data role.</td>
+                        <td colspan="8" class="muted">Tidak ada data yang cocok.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -131,15 +138,15 @@ function roles_page_url(int $page, int $perPage): string {
             </div>
 
             <div class="pagination-links">
-                <a href="<?= e(roles_page_url(max(1, $currentPage - 1), $perPage)) ?>" class="page-link <?= $currentPage <= 1 ? 'disabled' : '' ?>">Prev</a>
+                <a href="<?= e(roles_page_url(max(1, $currentPage - 1), $perPage, $search)) ?>" class="page-link <?= $currentPage <= 1 ? 'disabled' : '' ?>">Prev</a>
 
                 <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <a href="<?= e(roles_page_url($i, $perPage)) ?>" class="page-link <?= $i === $currentPage ? 'active' : '' ?>">
+                    <a href="<?= e(roles_page_url($i, $perPage, $search)) ?>" class="page-link <?= $i === $currentPage ? 'active' : '' ?>">
                         <?= e((string) $i) ?>
                     </a>
                 <?php endfor; ?>
 
-                <a href="<?= e(roles_page_url(min($totalPages, $currentPage + 1), $perPage)) ?>" class="page-link <?= $currentPage >= $totalPages ? 'disabled' : '' ?>">Next</a>
+                <a href="<?= e(roles_page_url(min($totalPages, $currentPage + 1), $perPage, $search)) ?>" class="page-link <?= $currentPage >= $totalPages ? 'disabled' : '' ?>">Next</a>
             </div>
         </div>
     </div>

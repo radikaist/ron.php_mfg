@@ -65,14 +65,41 @@ class User extends Model
         return $this->paginate(1, 1000000)['data'];
     }
 
-    public function paginate(int $page = 1, int $perPage = 5): array
+    public function paginate(int $page = 1, int $perPage = 5, string $search = ''): array
     {
         $page = max(1, $page);
         $allowed = [5, 10, 20, 50, 100];
         $perPage = in_array($perPage, $allowed, true) ? $perPage : 5;
         $offset = ($page - 1) * $perPage;
+        $search = trim($search);
 
-        $countStmt = $this->db->query("SELECT COUNT(*) AS total FROM users");
+        $whereSql = '';
+        $params = [];
+
+        if ($search !== '') {
+            $whereSql = "
+                WHERE (
+                    u.name LIKE :search
+                    OR u.username LIKE :search
+                    OR u.email LIKE :search
+                    OR EXISTS (
+                        SELECT 1
+                        FROM user_roles ur2
+                        INNER JOIN roles r2 ON r2.id = ur2.role_id
+                        WHERE ur2.user_id = u.id
+                          AND (r2.name LIKE :search OR r2.code LIKE :search)
+                    )
+                )
+            ";
+            $params['search'] = '%' . $search . '%';
+        }
+
+        $countStmt = $this->db->prepare("
+            SELECT COUNT(*) AS total
+            FROM users u
+            {$whereSql}
+        ");
+        $countStmt->execute($params);
         $total = (int) ($countStmt->fetch()['total'] ?? 0);
 
         $stmt = $this->db->prepare("
@@ -86,10 +113,16 @@ class User extends Model
             FROM users u
             LEFT JOIN user_roles ur ON ur.user_id = u.id
             LEFT JOIN roles r ON r.id = ur.role_id
+            {$whereSql}
             GROUP BY u.id, u.name, u.username, u.email, u.is_active
             ORDER BY u.id DESC
             LIMIT :limit OFFSET :offset
         ");
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, \PDO::PARAM_STR);
+        }
+
         $stmt->bindValue(':limit', $perPage, \PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
         $stmt->execute();
@@ -99,6 +132,7 @@ class User extends Model
             'total' => $total,
             'page' => $page,
             'per_page' => $perPage,
+            'search' => $search,
             'total_pages' => max(1, (int) ceil($total / $perPage)),
         ];
     }

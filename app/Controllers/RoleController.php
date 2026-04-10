@@ -29,9 +29,10 @@ class RoleController extends Controller
 
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $perPage = (int) ($_GET['per_page'] ?? 5);
+        $search = trim($_GET['search'] ?? '');
 
         $roleModel = new Role();
-        $pagination = $roleModel->paginate($page, $perPage);
+        $pagination = $roleModel->paginate($page, $perPage, $search);
 
         $this->view('roles/index', [
             'title' => 'Roles',

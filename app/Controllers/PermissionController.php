@@ -29,9 +29,10 @@ class PermissionController extends Controller
 
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $perPage = (int) ($_GET['per_page'] ?? 5);
+        $search = trim($_GET['search'] ?? '');
 
         $permissionModel = new Permission();
-        $pagination = $permissionModel->paginate($page, $perPage);
+        $pagination = $permissionModel->paginate($page, $perPage, $search);
 
         $this->view('permissions/index', [
             'title' => 'Permissions',

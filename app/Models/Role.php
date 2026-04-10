@@ -14,14 +14,34 @@ class Role extends Model
         return $this->paginate(1, 1000000)['data'];
     }
 
-    public function paginate(int $page = 1, int $perPage = 5): array
+    public function paginate(int $page = 1, int $perPage = 5, string $search = ''): array
     {
         $page = max(1, $page);
         $allowed = [5, 10, 20, 50, 100];
         $perPage = in_array($perPage, $allowed, true) ? $perPage : 5;
         $offset = ($page - 1) * $perPage;
+        $search = trim($search);
 
-        $countStmt = $this->db->query("SELECT COUNT(*) AS total FROM roles");
+        $whereSql = '';
+        $params = [];
+
+        if ($search !== '') {
+            $whereSql = "
+                WHERE (
+                    r.name LIKE :search
+                    OR r.code LIKE :search
+                    OR r.description LIKE :search
+                )
+            ";
+            $params['search'] = '%' . $search . '%';
+        }
+
+        $countStmt = $this->db->prepare("
+            SELECT COUNT(*) AS total
+            FROM roles r
+            {$whereSql}
+        ");
+        $countStmt->execute($params);
         $total = (int) ($countStmt->fetch()['total'] ?? 0);
 
         $stmt = $this->db->prepare("
@@ -32,10 +52,16 @@ class Role extends Model
             FROM roles r
             LEFT JOIN user_roles ur ON ur.role_id = r.id
             LEFT JOIN role_permissions rp ON rp.role_id = r.id
+            {$whereSql}
             GROUP BY r.id, r.name, r.code, r.description, r.is_active, r.created_at, r.updated_at
             ORDER BY r.id ASC
             LIMIT :limit OFFSET :offset
         ");
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, \PDO::PARAM_STR);
+        }
+
         $stmt->bindValue(':limit', $perPage, \PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
         $stmt->execute();
@@ -45,6 +71,7 @@ class Role extends Model
             'total' => $total,
             'page' => $page,
             'per_page' => $perPage,
+            'search' => $search,
             'total_pages' => max(1, (int) ceil($total / $perPage)),
         ];
     }

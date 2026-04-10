@@ -29,9 +29,10 @@ class UserController extends Controller
 
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $perPage = (int) ($_GET['per_page'] ?? 5);
+        $search = trim($_GET['search'] ?? '');
 
         $userModel = new User();
-        $pagination = $userModel->paginate($page, $perPage);
+        $pagination = $userModel->paginate($page, $perPage, $search);
 
         $this->view('users/index', [
             'title' => 'Users',
