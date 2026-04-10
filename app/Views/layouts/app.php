@@ -471,6 +471,7 @@ $toastError = flash_get('error');
         }
 
         .form-hint { margin-top: 6px; font-size: 12px; color: var(--muted); }
+
         .checkbox-label {
             display: inline-flex;
             align-items: center;
@@ -479,44 +480,50 @@ $toastError = flash_get('error');
             color: var(--text);
         }
 
-        .checkbox-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
+        .checkbox-list {
+            border: 1px solid var(--line);
+            background: var(--input-bg);
+            border-radius: 18px;
+            max-height: 260px;
+            overflow-y: auto;
+            padding: 10px;
         }
 
-        .checkbox-card {
+        .checkbox-item {
             display: flex;
             align-items: flex-start;
             gap: 12px;
-            padding: 14px;
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            background: var(--input-bg);
+            padding: 10px 12px;
+            border-radius: 14px;
             transition: .2s ease;
         }
 
-        .checkbox-card:hover {
-            border-color: #93c5fd;
-            box-shadow: 0 0 0 3px rgba(59,130,246,.08);
+        .checkbox-item:hover {
+            background: rgba(59,130,246,.06);
         }
 
-        .checkbox-card input[type="checkbox"] {
+        .checkbox-item input[type="checkbox"] {
             margin-top: 3px;
-            transform: scale(1.15);
+            transform: scale(1.1);
+            cursor: pointer;
         }
 
-        .checkbox-card-title {
-            font-weight: 700;
+        .checkbox-item-text {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .checkbox-item-title {
             font-size: 14px;
+            font-weight: 700;
             color: var(--text);
-            margin-bottom: 4px;
         }
 
-        .checkbox-card-meta {
+        .checkbox-item-desc {
             font-size: 12px;
             color: var(--muted);
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .btn {
@@ -572,7 +579,9 @@ $toastError = flash_get('error');
             user-select: none;
         }
 
-        .table th.no-sort { cursor: default; }
+        .table th.no-sort {
+            cursor: default;
+        }
 
         .info-list {
             display: flex;
@@ -667,7 +676,6 @@ $toastError = flash_get('error');
         @media (max-width: 1200px) {
             .quick-actions { grid-template-columns: repeat(2, 1fr); }
             .col-3, .col-4, .col-5, .col-6, .col-7, .col-8 { grid-column: span 12; }
-            .checkbox-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 900px) {

@@ -29,81 +29,36 @@
                     if (!is_array($selectedPermissionIds)) {
                         $selectedPermissionIds = [];
                     }
-
-                    $groupedPermissions = [];
-                    foreach ($permissions as $permission) {
-                        $module = $permission['module'] ?? 'general';
-                        $groupedPermissions[$module][] = $permission;
-                    }
+                    $selectedPermissionIds = array_map('strval', $selectedPermissionIds);
                     ?>
 
-                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
-                        <button type="button" id="checkAllPermissions" class="btn-outline" style="cursor:pointer;">Check All</button>
-                        <button type="button" id="uncheckAllPermissions" class="btn-outline" style="cursor:pointer;">Uncheck All</button>
-                    </div>
-
-                    <div style="
-                        border:1px solid var(--line);
-                        border-radius:18px;
-                        padding:18px;
-                        background:var(--input-bg);
-                    ">
-                        <?php if (!empty($groupedPermissions)): ?>
-                            <?php foreach ($groupedPermissions as $module => $modulePermissions): ?>
-                                <div style="margin-bottom:22px;">
-                                    <div style="
-                                        font-weight:800;
-                                        font-size:14px;
-                                        color:var(--text);
-                                        margin-bottom:10px;
-                                        text-transform:uppercase;
-                                        letter-spacing:.4px;
-                                    ">
-                                        <?= e($module) ?>
-                                    </div>
-
-                                    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px;">
-                                        <?php foreach ($modulePermissions as $permission): ?>
-                                            <?php $permissionId = (string) $permission['id']; ?>
-                                            <label style="
-                                                display:flex;
-                                                align-items:flex-start;
-                                                gap:12px;
-                                                padding:12px 14px;
-                                                border:1px solid var(--line);
-                                                border-radius:14px;
-                                                background:rgba(255,255,255,.35);
-                                                cursor:pointer;
-                                            ">
-                                                <input
-                                                    type="checkbox"
-                                                    name="permission_ids[]"
-                                                    value="<?= e($permissionId) ?>"
-                                                    class="permission-checkbox"
-                                                    <?= in_array($permissionId, array_map('strval', $selectedPermissionIds), true) ? 'checked' : '' ?>
-                                                    style="margin-top:3px;"
-                                                >
-
-                                                <div>
-                                                    <div style="font-weight:700; color:var(--text);">
-                                                        <?= e($permission['name']) ?>
-                                                    </div>
-                                                    <div class="muted" style="font-size:12px; margin-top:4px;">
-                                                        <?= e($permission['code']) ?>
-                                                    </div>
-                                                </div>
-                                            </label>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="muted">Belum ada permission tersedia.</div>
-                        <?php endif; ?>
+                    <div class="checkbox-list">
+                        <?php foreach ($permissions as $permission): ?>
+                            <?php
+                            $permissionId = (string) $permission['id'];
+                            $isChecked = in_array($permissionId, $selectedPermissionIds, true);
+                            ?>
+                            <label class="checkbox-item">
+                                <input
+                                    type="checkbox"
+                                    name="permission_ids[]"
+                                    value="<?= e($permissionId) ?>"
+                                    <?= $isChecked ? 'checked' : '' ?>
+                                >
+                                <span class="checkbox-item-text">
+                                    <span class="checkbox-item-title">
+                                        [<?= e($permission['module']) ?>] <?= e($permission['name']) ?>
+                                    </span>
+                                    <span class="checkbox-item-desc">
+                                        Code: <?= e($permission['code']) ?>
+                                    </span>
+                                </span>
+                            </label>
+                        <?php endforeach; ?>
                     </div>
 
                     <div class="form-hint">
-                        Centang atau hapus centang permission untuk role ini.
+                        Centang atau hilangkan centang permission sesuai kebutuhan role.
                     </div>
                 </div>
 
@@ -124,27 +79,3 @@
         </form>
     </div>
 </div>
-
-<script>
-    (function () {
-        const checkAllBtn = document.getElementById('checkAllPermissions');
-        const uncheckAllBtn = document.getElementById('uncheckAllPermissions');
-        const checkboxes = document.querySelectorAll('.permission-checkbox');
-
-        if (checkAllBtn) {
-            checkAllBtn.addEventListener('click', function () {
-                checkboxes.forEach(function (checkbox) {
-                    checkbox.checked = true;
-                });
-            });
-        }
-
-        if (uncheckAllBtn) {
-            uncheckAllBtn.addEventListener('click', function () {
-                checkboxes.forEach(function (checkbox) {
-                    checkbox.checked = false;
-                });
-            });
-        }
-    })();
-</script>
