@@ -1,0 +1,25 @@
+name: 🚀 FTP Deploy ke Biznet Gio
+
+on:
+  push:
+    branches:
+      - main  # Ganti jika branch deploy-mu beda
+
+jobs:
+  ftp-deploy:
+    name: FTP Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Upload via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_TARGET }}/
+          protocol: ftp
+          log-level: verbose
