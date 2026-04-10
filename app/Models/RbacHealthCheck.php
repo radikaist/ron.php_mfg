@@ -46,6 +46,25 @@ class RbacHealthCheck extends Model
         ];
     }
 
+    public function paginateArray(array $items, int $page = 1, int $perPage = 5): array
+    {
+        $allowed = [5, 10, 20, 50, 100];
+        $page = max(1, $page);
+        $perPage = in_array($perPage, $allowed, true) ? $perPage : 5;
+
+        $total = count($items);
+        $offset = ($page - 1) * $perPage;
+        $data = array_slice($items, $offset, $perPage);
+
+        return [
+            'data' => array_values($data),
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_pages' => max(1, (int) ceil($total / $perPage)),
+        ];
+    }
+
     public function routesWithoutPermission(): array
     {
         $routes = require ROUTES_PATH . '/web.php';
