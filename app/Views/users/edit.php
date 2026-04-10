@@ -1,31 +1,37 @@
 <div class="card">
     <div class="card-header">Edit User</div>
     <div class="card-body">
-        <form action="<?= e(base_url('users/update')) ?>" method="POST">
+        <form action="<?= e(base_url('users/update')) ?>" method="POST" data-confirm="Update data user ini?">
             <?= csrf_field() ?>
             <input type="hidden" name="id" value="<?= e((string) $userData['id']) ?>">
 
             <div class="grid">
                 <div class="col-6">
-                    <label style="display:block; margin-bottom:8px; font-weight:700;">Nama</label>
-                    <input type="text" name="name" value="<?= e($userData['name']) ?>" style="width:100%; padding:12px 14px; border:1px solid #dbeafe; border-radius:14px;">
+                    <label class="form-label">Nama</label>
+                    <input type="text" name="name" value="<?= e(old_or('name', $userData['name'])) ?>" class="form-control">
                 </div>
 
                 <div class="col-6">
-                    <label style="display:block; margin-bottom:8px; font-weight:700;">Username</label>
-                    <input type="text" name="username" value="<?= e($userData['username']) ?>" style="width:100%; padding:12px 14px; border:1px solid #dbeafe; border-radius:14px;">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" value="<?= e(old_or('username', $userData['username'])) ?>" class="form-control">
                 </div>
 
                 <div class="col-6">
-                    <label style="display:block; margin-bottom:8px; font-weight:700;">Email</label>
-                    <input type="email" name="email" value="<?= e($userData['email']) ?>" style="width:100%; padding:12px 14px; border:1px solid #dbeafe; border-radius:14px;">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" value="<?= e(old_or('email', $userData['email'])) ?>" class="form-control">
                 </div>
 
                 <div class="col-6">
-                    <label style="display:block; margin-bottom:8px; font-weight:700;">Role</label>
-                    <select name="role_ids[]" multiple style="width:100%; min-height:130px; padding:12px 14px; border:1px solid #dbeafe; border-radius:14px;">
+                    <label class="form-label">Role</label>
+                    <?php
+                    $selectedRoleIds = old_or('role_ids', $userData['role_ids']);
+                    if (!is_array($selectedRoleIds)) {
+                        $selectedRoleIds = [];
+                    }
+                    ?>
+                    <select name="role_ids[]" multiple class="form-select" style="min-height:130px;">
                         <?php foreach ($roles as $role): ?>
-                            <option value="<?= e((string) $role['id']) ?>" <?= in_array((int) $role['id'], $userData['role_ids'], true) ? 'selected' : '' ?>>
+                            <option value="<?= e((string) $role['id']) ?>" <?= in_array((string) $role['id'], array_map('strval', $selectedRoleIds), true) ? 'selected' : '' ?>>
                                 <?= e($role['name']) ?> (<?= e($role['code']) ?>)
                             </option>
                         <?php endforeach; ?>
@@ -33,31 +39,27 @@
                 </div>
 
                 <div class="col-6">
-                    <label style="display:block; margin-bottom:8px; font-weight:700;">Password Baru</label>
-                    <input type="password" name="password" style="width:100%; padding:12px 14px; border:1px solid #dbeafe; border-radius:14px;">
-                    <div class="muted" style="margin-top:6px; font-size:12px;">Kosongkan jika tidak ingin mengganti password.</div>
+                    <label class="form-label">Password Baru</label>
+                    <input type="password" name="password" class="form-control">
+                    <div class="form-hint">Kosongkan jika tidak ingin mengganti password.</div>
                 </div>
 
                 <div class="col-6">
-                    <label style="display:block; margin-bottom:8px; font-weight:700;">Konfirmasi Password Baru</label>
-                    <input type="password" name="password_confirmation" style="width:100%; padding:12px 14px; border:1px solid #dbeafe; border-radius:14px;">
+                    <label class="form-label">Konfirmasi Password Baru</label>
+                    <input type="password" name="password_confirmation" class="form-control">
                 </div>
 
                 <div class="col-12">
-                    <label style="display:inline-flex; align-items:center; gap:10px; font-weight:700;">
-                        <input type="checkbox" name="is_active" value="1" <?= (int) $userData['is_active'] === 1 ? 'checked' : '' ?>>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="is_active" value="1" <?= old_or('is_active', $userData['is_active']) ? 'checked' : '' ?>>
                         User aktif
                     </label>
                 </div>
 
                 <div class="col-12">
                     <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                        <button type="submit" style="border:none; padding:12px 18px; border-radius:14px; background:linear-gradient(90deg,#3b82f6,#06b6d4); color:#fff; font-weight:700; cursor:pointer;">
-                            Update User
-                        </button>
-                        <a href="<?= e(base_url('users')) ?>" style="display:inline-flex; align-items:center; padding:12px 18px; border-radius:14px; border:1px solid #dbeafe; color:inherit;">
-                            Kembali
-                        </a>
+                        <button type="submit" class="btn btn-primary">Update User</button>
+                        <a href="<?= e(base_url('users')) ?>" class="btn-outline">Kembali</a>
                     </div>
                 </div>
             </div>

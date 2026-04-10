@@ -75,6 +75,14 @@ class PermissionController extends Controller
         $description = trim($_POST['description'] ?? '');
         $isActive = isset($_POST['is_active']) ? 1 : 0;
 
+        $_SESSION['_old'] = [
+            'name' => $name,
+            'code' => $code,
+            'module' => $module,
+            'description' => $description,
+            'is_active' => $isActive,
+        ];
+
         if ($name === '' || $code === '' || $module === '') {
             flash('error', 'Name, code, dan module wajib diisi.');
             redirect('permissions/create');
@@ -100,6 +108,7 @@ class PermissionController extends Controller
             redirect('permissions/create');
         }
 
+        unset($_SESSION['_old']);
         flash('success', 'Permission berhasil ditambahkan.');
         redirect('permissions');
     }
@@ -159,6 +168,14 @@ class PermissionController extends Controller
         $description = trim($_POST['description'] ?? '');
         $isActive = isset($_POST['is_active']) ? 1 : 0;
 
+        $_SESSION['_old'] = [
+            'name' => $name,
+            'code' => $code,
+            'module' => $module,
+            'description' => $description,
+            'is_active' => $isActive,
+        ];
+
         if ($name === '' || $code === '' || $module === '') {
             flash('error', 'Name, code, dan module wajib diisi.');
             redirect('permissions/edit?id=' . $id);
@@ -184,6 +201,7 @@ class PermissionController extends Controller
             redirect('permissions/edit?id=' . $id);
         }
 
+        unset($_SESSION['_old']);
         flash('success', 'Permission berhasil diupdate.');
         redirect('permissions');
     }

@@ -11,7 +11,18 @@
 <div class="card">
     <div class="card-header">Daftar Permission</div>
     <div class="card-body">
-        <table class="table">
+        <div class="toolbar">
+            <div class="search-box">
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Cari permission, code, module..."
+                    data-table-filter="permissionsTable"
+                >
+            </div>
+        </div>
+
+        <table class="table" id="permissionsTable">
             <thead>
                 <tr>
                     <th width="80">ID</th>

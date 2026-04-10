@@ -11,7 +11,18 @@
 <div class="card">
     <div class="card-header">Daftar Role</div>
     <div class="card-body">
-        <table class="table">
+        <div class="toolbar">
+            <div class="search-box">
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Cari role, code, description..."
+                    data-table-filter="rolesTable"
+                >
+            </div>
+        </div>
+
+        <table class="table" id="rolesTable">
             <thead>
                 <tr>
                     <th width="80">ID</th>

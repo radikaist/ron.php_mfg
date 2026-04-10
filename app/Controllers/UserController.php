@@ -189,6 +189,14 @@ class UserController extends Controller
         $roleIds = $_POST['role_ids'] ?? [];
         $isActive = isset($_POST['is_active']) ? 1 : 0;
 
+        $_SESSION['_old'] = [
+            'name' => $name,
+            'username' => $username,
+            'email' => $email,
+            'role_ids' => $roleIds,
+            'is_active' => $isActive,
+        ];
+
         if ($name === '' || $username === '') {
             flash('error', 'Name dan username wajib diisi.');
             redirect('users/edit?id=' . $id);
@@ -220,6 +228,7 @@ class UserController extends Controller
             redirect('users/edit?id=' . $id);
         }
 
+        unset($_SESSION['_old']);
         flash('success', 'User berhasil diupdate.');
         redirect('users');
     }

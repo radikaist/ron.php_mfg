@@ -80,6 +80,14 @@ class RoleController extends Controller
         $permissionIds = $_POST['permission_ids'] ?? [];
         $isActive = isset($_POST['is_active']) ? 1 : 0;
 
+        $_SESSION['_old'] = [
+            'name' => $name,
+            'code' => $code,
+            'description' => $description,
+            'permission_ids' => $permissionIds,
+            'is_active' => $isActive,
+        ];
+
         if ($name === '' || $code === '') {
             flash('error', 'Name dan code role wajib diisi.');
             redirect('roles/create');
@@ -105,6 +113,7 @@ class RoleController extends Controller
             redirect('roles/create');
         }
 
+        unset($_SESSION['_old']);
         flash('success', 'Role berhasil ditambahkan.');
         redirect('roles');
     }
@@ -169,6 +178,14 @@ class RoleController extends Controller
         $permissionIds = $_POST['permission_ids'] ?? [];
         $isActive = isset($_POST['is_active']) ? 1 : 0;
 
+        $_SESSION['_old'] = [
+            'name' => $name,
+            'code' => $code,
+            'description' => $description,
+            'permission_ids' => $permissionIds,
+            'is_active' => $isActive,
+        ];
+
         if ($name === '' || $code === '') {
             flash('error', 'Name dan code role wajib diisi.');
             redirect('roles/edit?id=' . $id);
@@ -194,6 +211,7 @@ class RoleController extends Controller
             redirect('roles/edit?id=' . $id);
         }
 
+        unset($_SESSION['_old']);
         flash('success', 'Role berhasil diupdate.');
         redirect('roles');
     }

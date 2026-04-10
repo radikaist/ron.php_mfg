@@ -54,6 +54,26 @@ if (!function_exists('old')) {
     }
 }
 
+if (!function_exists('old_or')) {
+    function old_or(string $key, mixed $fallback = ''): mixed
+    {
+        return $_SESSION['_old'][$key] ?? $fallback;
+    }
+}
+
+if (!function_exists('is_checked')) {
+    function is_checked(string $key, mixed $value = 1, mixed $default = null): string
+    {
+        $oldValue = $_SESSION['_old'][$key] ?? $default;
+
+        if (is_array($oldValue)) {
+            return in_array((string) $value, array_map('strval', $oldValue), true) ? 'checked' : '';
+        }
+
+        return ((string) $oldValue === (string) $value) ? 'checked' : '';
+    }
+}
+
 if (!function_exists('flash')) {
     function flash(string $key, mixed $value): void
     {

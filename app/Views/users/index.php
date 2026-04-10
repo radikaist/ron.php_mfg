@@ -11,7 +11,18 @@
 <div class="card">
     <div class="card-header">Daftar User</div>
     <div class="card-body">
-        <table class="table">
+        <div class="toolbar">
+            <div class="search-box">
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Cari user, username, email, role..."
+                    data-table-filter="usersTable"
+                >
+            </div>
+        </div>
+
+        <table class="table" id="usersTable">
             <thead>
                 <tr>
                     <th width="80">ID</th>
