@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Core\Database;
 use Core\Model;
-use PDO;
 use Throwable;
 
 class RbacHealthCheck extends Model
@@ -291,13 +289,12 @@ class RbacHealthCheck extends Model
 
     public function autoGenerateFromRoutes(): array
     {
-        $db = Database::connect();
         $rows = $this->routesWithoutPermission();
         $created = 0;
         $skipped = 0;
 
         try {
-            $db->beginTransaction();
+            $this->db->beginTransaction();
 
             foreach ($rows as $row) {
                 if ($this->insertPermissionIfNotExists(
@@ -312,11 +309,12 @@ class RbacHealthCheck extends Model
                 }
             }
 
-            $db->commit();
+            $this->db->commit();
         } catch (Throwable $e) {
-            if ($db instanceof PDO && $db->inTransaction()) {
-                $db->rollBack();
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
             }
+            return ['created' => 0, 'skipped' => count($rows)];
         }
 
         return ['created' => $created, 'skipped' => $skipped];
@@ -324,13 +322,12 @@ class RbacHealthCheck extends Model
 
     public function autoGenerateFromControllerUsage(): array
     {
-        $db = Database::connect();
         $rows = $this->controllerPermissionNotRegistered();
         $created = 0;
         $skipped = 0;
 
         try {
-            $db->beginTransaction();
+            $this->db->beginTransaction();
 
             foreach ($rows as $row) {
                 if ($this->insertPermissionIfNotExists(
@@ -345,11 +342,12 @@ class RbacHealthCheck extends Model
                 }
             }
 
-            $db->commit();
+            $this->db->commit();
         } catch (Throwable $e) {
-            if ($db instanceof PDO && $db->inTransaction()) {
-                $db->rollBack();
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
             }
+            return ['created' => 0, 'skipped' => count($rows)];
         }
 
         return ['created' => $created, 'skipped' => $skipped];
