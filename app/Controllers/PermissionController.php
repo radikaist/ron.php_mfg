@@ -27,11 +27,16 @@ class PermissionController extends Controller
             return;
         }
 
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = (int) ($_GET['per_page'] ?? 5);
+
         $permissionModel = new Permission();
+        $pagination = $permissionModel->paginate($page, $perPage);
 
         $this->view('permissions/index', [
             'title' => 'Permissions',
-            'permissions' => $permissionModel->all(),
+            'permissions' => $pagination['data'],
+            'pagination' => $pagination,
         ]);
     }
 

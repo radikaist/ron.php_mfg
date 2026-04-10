@@ -1,5 +1,5 @@
 <?php
-$totalPermissions = count($permissions ?? []);
+$totalPermissions = $pagination['total'] ?? count($permissions ?? []);
 $activePermissions = 0;
 $totalRoleRelations = 0;
 
@@ -8,6 +8,14 @@ foreach (($permissions ?? []) as $row) {
         $activePermissions++;
     }
     $totalRoleRelations += (int) $row['total_roles'];
+}
+
+$currentPage = (int) ($pagination['page'] ?? 1);
+$perPage = (int) ($pagination['per_page'] ?? 5);
+$totalPages = (int) ($pagination['total_pages'] ?? 1);
+
+function permissions_page_url(int $page, int $perPage): string {
+    return base_url('permissions?page=' . $page . '&per_page=' . $perPage);
 }
 ?>
 
@@ -24,15 +32,15 @@ foreach (($permissions ?? []) as $row) {
         <div class="small-box bg-green">
             <div class="label">Active Permissions</div>
             <div class="value"><?= e((string) $activePermissions) ?></div>
-            <div class="desc">Permission aktif yang dapat dipakai role.</div>
-            <div class="mini">Permission Active</div>
+            <div class="desc">Permission aktif yang tampil di halaman ini.</div>
+            <div class="mini">Current Page</div>
         </div>
     </div>
     <div class="col-4">
         <div class="small-box bg-sky">
             <div class="label">Role Relations</div>
             <div class="value"><?= e((string) $totalRoleRelations) ?></div>
-            <div class="desc">Jumlah relasi permission terhadap role.</div>
+            <div class="desc">Jumlah relasi permission terhadap role pada halaman ini.</div>
             <div class="mini">Permission Mapping</div>
         </div>
     </div>
@@ -60,9 +68,18 @@ foreach (($permissions ?? []) as $row) {
                     data-table-filter="permissionsTable"
                 >
             </div>
-            <div class="muted" style="font-size:13px;">
-                Klik judul kolom untuk sorting.
-            </div>
+
+            <form method="GET" action="<?= e(base_url('permissions')) ?>" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <label class="muted">Tampilkan</label>
+                <select name="per_page" class="form-select" style="width:auto;" onchange="this.form.submit()">
+                    <?php foreach ([5, 10, 20, 50, 100] as $size): ?>
+                        <option value="<?= e((string) $size) ?>" <?= $perPage === $size ? 'selected' : '' ?>>
+                            <?= e((string) $size) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <input type="hidden" name="page" value="1">
+            </form>
         </div>
 
         <table class="table sortable-table" id="permissionsTable">
@@ -75,7 +92,7 @@ foreach (($permissions ?? []) as $row) {
                     <th>Description</th>
                     <th width="120">Roles</th>
                     <th width="120">Status</th>
-                    <th width="120">Action</th>
+                    <th class="no-sort" width="120">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -107,5 +124,23 @@ foreach (($permissions ?? []) as $row) {
                 <?php endif; ?>
             </tbody>
         </table>
+
+        <div class="pagination-wrap">
+            <div class="muted">
+                Halaman <?= e((string) $currentPage) ?> dari <?= e((string) $totalPages) ?> • Total data <?= e((string) $totalPermissions) ?>
+            </div>
+
+            <div class="pagination-links">
+                <a href="<?= e(permissions_page_url(max(1, $currentPage - 1), $perPage)) ?>" class="page-link <?= $currentPage <= 1 ? 'disabled' : '' ?>">Prev</a>
+
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a href="<?= e(permissions_page_url($i, $perPage)) ?>" class="page-link <?= $i === $currentPage ? 'active' : '' ?>">
+                        <?= e((string) $i) ?>
+                    </a>
+                <?php endfor; ?>
+
+                <a href="<?= e(permissions_page_url(min($totalPages, $currentPage + 1), $perPage)) ?>" class="page-link <?= $currentPage >= $totalPages ? 'disabled' : '' ?>">Next</a>
+            </div>
+        </div>
     </div>
 </div>

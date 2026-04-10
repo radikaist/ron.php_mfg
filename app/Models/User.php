@@ -62,7 +62,20 @@ class User extends Model
 
     public function all(): array
     {
-        $sql = "
+        return $this->paginate(1, 1000000)['data'];
+    }
+
+    public function paginate(int $page = 1, int $perPage = 5): array
+    {
+        $page = max(1, $page);
+        $allowed = [5, 10, 20, 50, 100];
+        $perPage = in_array($perPage, $allowed, true) ? $perPage : 5;
+        $offset = ($page - 1) * $perPage;
+
+        $countStmt = $this->db->query("SELECT COUNT(*) AS total FROM users");
+        $total = (int) ($countStmt->fetch()['total'] ?? 0);
+
+        $stmt = $this->db->prepare("
             SELECT 
                 u.id,
                 u.name,
@@ -75,9 +88,19 @@ class User extends Model
             LEFT JOIN roles r ON r.id = ur.role_id
             GROUP BY u.id, u.name, u.username, u.email, u.is_active
             ORDER BY u.id DESC
-        ";
+            LIMIT :limit OFFSET :offset
+        ");
+        $stmt->bindValue(':limit', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
 
-        return $this->db->query($sql)->fetchAll();
+        return [
+            'data' => $stmt->fetchAll(),
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_pages' => max(1, (int) ceil($total / $perPage)),
+        ];
     }
 
     public function findById(int $id): array|false

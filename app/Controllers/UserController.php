@@ -27,12 +27,16 @@ class UserController extends Controller
             return;
         }
 
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = (int) ($_GET['per_page'] ?? 5);
+
         $userModel = new User();
-        $users = $userModel->all();
+        $pagination = $userModel->paginate($page, $perPage);
 
         $this->view('users/index', [
             'title' => 'Users',
-            'users' => $users,
+            'users' => $pagination['data'],
+            'pagination' => $pagination,
         ]);
     }
 

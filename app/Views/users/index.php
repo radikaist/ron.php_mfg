@@ -1,5 +1,5 @@
 <?php
-$totalUsers = count($users ?? []);
+$totalUsers = $pagination['total'] ?? count($users ?? []);
 $activeUsers = 0;
 $inactiveUsers = 0;
 
@@ -9,6 +9,14 @@ foreach (($users ?? []) as $row) {
     } else {
         $inactiveUsers++;
     }
+}
+
+$currentPage = (int) ($pagination['page'] ?? 1);
+$perPage = (int) ($pagination['per_page'] ?? 5);
+$totalPages = (int) ($pagination['total_pages'] ?? 1);
+
+function users_page_url(int $page, int $perPage): string {
+    return base_url('users?page=' . $page . '&per_page=' . $perPage);
 }
 ?>
 
@@ -25,16 +33,16 @@ foreach (($users ?? []) as $row) {
         <div class="small-box bg-green">
             <div class="label">Active Users</div>
             <div class="value"><?= e((string) $activeUsers) ?></div>
-            <div class="desc">User aktif yang dapat menggunakan sistem.</div>
-            <div class="mini">Status Active</div>
+            <div class="desc">User aktif yang tampil di halaman ini.</div>
+            <div class="mini">Current Page</div>
         </div>
     </div>
     <div class="col-4">
         <div class="small-box bg-orange">
             <div class="label">Inactive Users</div>
             <div class="value"><?= e((string) $inactiveUsers) ?></div>
-            <div class="desc">User nonaktif yang tidak dapat login.</div>
-            <div class="mini">Status Inactive</div>
+            <div class="desc">User nonaktif yang tampil di halaman ini.</div>
+            <div class="mini">Current Page</div>
         </div>
     </div>
 </div>
@@ -61,9 +69,18 @@ foreach (($users ?? []) as $row) {
                     data-table-filter="usersTable"
                 >
             </div>
-            <div class="muted" style="font-size:13px;">
-                Klik judul kolom untuk sorting.
-            </div>
+
+            <form method="GET" action="<?= e(base_url('users')) ?>" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <label class="muted">Tampilkan</label>
+                <select name="per_page" class="form-select" style="width:auto;" onchange="this.form.submit()">
+                    <?php foreach ([5, 10, 20, 50, 100] as $size): ?>
+                        <option value="<?= e((string) $size) ?>" <?= $perPage === $size ? 'selected' : '' ?>>
+                            <?= e((string) $size) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <input type="hidden" name="page" value="1">
+            </form>
         </div>
 
         <table class="table sortable-table" id="usersTable">
@@ -75,7 +92,7 @@ foreach (($users ?? []) as $row) {
                     <th>Email</th>
                     <th>Role</th>
                     <th width="120">Status</th>
-                    <th width="120">Action</th>
+                    <th class="no-sort" width="120">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -106,5 +123,23 @@ foreach (($users ?? []) as $row) {
                 <?php endif; ?>
             </tbody>
         </table>
+
+        <div class="pagination-wrap">
+            <div class="muted">
+                Halaman <?= e((string) $currentPage) ?> dari <?= e((string) $totalPages) ?> • Total data <?= e((string) $totalUsers) ?>
+            </div>
+
+            <div class="pagination-links">
+                <a href="<?= e(users_page_url(max(1, $currentPage - 1), $perPage)) ?>" class="page-link <?= $currentPage <= 1 ? 'disabled' : '' ?>">Prev</a>
+
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a href="<?= e(users_page_url($i, $perPage)) ?>" class="page-link <?= $i === $currentPage ? 'active' : '' ?>">
+                        <?= e((string) $i) ?>
+                    </a>
+                <?php endfor; ?>
+
+                <a href="<?= e(users_page_url(min($totalPages, $currentPage + 1), $perPage)) ?>" class="page-link <?= $currentPage >= $totalPages ? 'disabled' : '' ?>">Next</a>
+            </div>
+        </div>
     </div>
 </div>
