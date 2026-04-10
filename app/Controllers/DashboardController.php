@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Models\Dashboard;
 use Core\Auth;
 use Core\Controller;
+
+require_once APP_PATH . '/Models/Dashboard.php';
 
 class DashboardController extends Controller
 {
@@ -24,9 +27,13 @@ class DashboardController extends Controller
             return;
         }
 
+        $dashboardModel = new Dashboard();
+        $stats = $dashboardModel->counts();
+
         $this->view('dashboard/index', [
             'title' => 'Dashboard',
             'user' => Auth::user(),
+            'stats' => $stats,
         ]);
     }
 }

@@ -1,3 +1,44 @@
+<?php
+$totalUsers = count($users ?? []);
+$activeUsers = 0;
+$inactiveUsers = 0;
+
+foreach (($users ?? []) as $row) {
+    if ((int) $row['is_active'] === 1) {
+        $activeUsers++;
+    } else {
+        $inactiveUsers++;
+    }
+}
+?>
+
+<div class="grid">
+    <div class="col-4">
+        <div class="small-box bg-sky">
+            <div class="label">Total Users</div>
+            <div class="value"><?= e((string) $totalUsers) ?></div>
+            <div class="desc">Jumlah seluruh user yang tersedia di sistem.</div>
+            <div class="mini">Master User</div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="small-box bg-green">
+            <div class="label">Active Users</div>
+            <div class="value"><?= e((string) $activeUsers) ?></div>
+            <div class="desc">User aktif yang dapat menggunakan sistem.</div>
+            <div class="mini">Status Active</div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="small-box bg-orange">
+            <div class="label">Inactive Users</div>
+            <div class="value"><?= e((string) $inactiveUsers) ?></div>
+            <div class="desc">User nonaktif yang tidak dapat login.</div>
+            <div class="mini">Status Inactive</div>
+        </div>
+    </div>
+</div>
+
 <div class="quick-actions">
     <a class="quick-action" href="<?= e(base_url('users/create')) ?>">
         <div class="quick-action-icon qa-blue">➕</div>
@@ -20,9 +61,12 @@
                     data-table-filter="usersTable"
                 >
             </div>
+            <div class="muted" style="font-size:13px;">
+                Klik judul kolom untuk sorting.
+            </div>
         </div>
 
-        <table class="table" id="usersTable">
+        <table class="table sortable-table" id="usersTable">
             <thead>
                 <tr>
                     <th width="80">ID</th>
@@ -56,7 +100,7 @@
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr>
+                    <tr class="empty-row">
                         <td colspan="7" class="muted">Belum ada data user.</td>
                     </tr>
                 <?php endif; ?>

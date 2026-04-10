@@ -1,3 +1,43 @@
+<?php
+$totalRoles = count($roles ?? []);
+$activeRoles = 0;
+$totalMappedPermissions = 0;
+
+foreach (($roles ?? []) as $row) {
+    if ((int) $row['is_active'] === 1) {
+        $activeRoles++;
+    }
+    $totalMappedPermissions += (int) $row['total_permissions'];
+}
+?>
+
+<div class="grid">
+    <div class="col-4">
+        <div class="small-box bg-pink">
+            <div class="label">Total Roles</div>
+            <div class="value"><?= e((string) $totalRoles) ?></div>
+            <div class="desc">Jumlah seluruh role yang tersedia.</div>
+            <div class="mini">RBAC Role Layer</div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="small-box bg-green">
+            <div class="label">Active Roles</div>
+            <div class="value"><?= e((string) $activeRoles) ?></div>
+            <div class="desc">Role aktif yang dapat digunakan dalam assignment.</div>
+            <div class="mini">Role Active</div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="small-box bg-orange">
+            <div class="label">Mapped Permissions</div>
+            <div class="value"><?= e((string) $totalMappedPermissions) ?></div>
+            <div class="desc">Total permission yang sudah dipetakan ke role.</div>
+            <div class="mini">Permission Matrix</div>
+        </div>
+    </div>
+</div>
+
 <div class="quick-actions">
     <a class="quick-action" href="<?= e(base_url('roles/create')) ?>">
         <div class="quick-action-icon qa-green">➕</div>
@@ -20,9 +60,12 @@
                     data-table-filter="rolesTable"
                 >
             </div>
+            <div class="muted" style="font-size:13px;">
+                Klik judul kolom untuk sorting.
+            </div>
         </div>
 
-        <table class="table" id="rolesTable">
+        <table class="table sortable-table" id="rolesTable">
             <thead>
                 <tr>
                     <th width="80">ID</th>
@@ -58,7 +101,7 @@
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr>
+                    <tr class="empty-row">
                         <td colspan="8" class="muted">Belum ada data role.</td>
                     </tr>
                 <?php endif; ?>

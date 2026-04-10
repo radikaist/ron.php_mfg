@@ -48,32 +48,26 @@ $toastError = flash_get('error');
             --sidebar-width: 300px;
             --topbar-height: 72px;
             --footer-height: 58px;
-
             --primary: #3b82f6;
             --primary-2: #06b6d4;
             --success: #22c55e;
             --warning: #f59e0b;
             --pink: #ec4899;
             --violet: #8b5cf6;
-
             --sidebar-bg-1: #eff6ff;
             --sidebar-bg-2: #ecfeff;
             --sidebar-border: #dbeafe;
-
             --body-bg: linear-gradient(135deg, #f6fbff 0%, #eef8ff 45%, #f7fffb 100%);
             --card-bg: rgba(255,255,255,.88);
             --card-border: rgba(255,255,255,.7);
             --card-shadow: 0 20px 45px rgba(59,130,246,.10);
-
             --text: #0f172a;
             --muted: #64748b;
             --line: #e5eef9;
-
             --success-bg: #dcfce7;
             --success-text: #166534;
             --danger-bg: #fee2e2;
             --danger-text: #b91c1c;
-
             --topbar-bg: rgba(255,255,255,.82);
             --footer-bg: rgba(255,255,255,.55);
             --menu-item-bg: rgba(255,255,255,.55);
@@ -88,16 +82,13 @@ $toastError = flash_get('error');
             --sidebar-bg-1: #172033;
             --sidebar-bg-2: #0f172a;
             --sidebar-border: rgba(255,255,255,.06);
-
             --body-bg: linear-gradient(135deg, #0f172a 0%, #111827 45%, #172033 100%);
             --card-bg: rgba(30,41,59,.78);
             --card-border: rgba(255,255,255,.06);
             --card-shadow: 0 20px 45px rgba(0,0,0,.28);
-
             --text: #e5eefc;
             --muted: #94a3b8;
             --line: rgba(255,255,255,.08);
-
             --topbar-bg: rgba(15,23,42,.82);
             --footer-bg: rgba(15,23,42,.52);
             --menu-item-bg: rgba(255,255,255,.04);
@@ -117,6 +108,7 @@ $toastError = flash_get('error');
             background: var(--body-bg);
             transition: background .25s ease, color .25s ease;
         }
+
         body { min-height: 100vh; }
         a { text-decoration: none; color: inherit; }
         .layout { min-height: 100vh; }
@@ -154,22 +146,10 @@ $toastError = flash_get('error');
             box-shadow: 0 12px 20px rgba(59,130,246,.18);
         }
 
-        .sidebar-toggle {
-            background: linear-gradient(90deg, #3b82f6, #06b6d4);
-            font-size: 18px;
-        }
+        .sidebar-toggle { background: linear-gradient(90deg, #3b82f6, #06b6d4); font-size: 18px; }
+        .theme-toggle { background: linear-gradient(90deg, #8b5cf6, #ec4899); font-size: 14px; }
 
-        .theme-toggle {
-            background: linear-gradient(90deg, #8b5cf6, #ec4899);
-            font-size: 14px;
-        }
-
-        .brand {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--text);
-        }
-
+        .brand { font-size: 28px; font-weight: 800; color: var(--text); }
         .brand span {
             background: linear-gradient(90deg, #2563eb, #06b6d4);
             -webkit-background-clip: text;
@@ -178,18 +158,56 @@ $toastError = flash_get('error');
             color: transparent;
         }
 
-        .topbar-user {
+        .profile-menu { position: relative; }
+        .profile-btn {
             font-size: 14px;
             color: var(--text);
             padding: 10px 14px;
             border-radius: 999px;
             background: rgba(255,255,255,.08);
             border: 1px solid var(--line);
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 10px);
+            min-width: 240px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            box-shadow: var(--card-shadow);
+            padding: 12px;
+            z-index: 1100;
+        }
+
+        .profile-menu.open .profile-dropdown { display: block; }
+
+        .profile-name {
+            font-weight: 800;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .profile-email {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .profile-role {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 12px;
         }
 
         .logout-form { margin: 0; }
-
         .logout-btn {
+            width: 100%;
             border: none;
             background: linear-gradient(90deg, #ef4444, #f97316);
             color: #fff;
@@ -231,18 +249,8 @@ $toastError = flash_get('error');
             margin-bottom: 18px;
         }
 
-        .sidebar-user-name {
-            font-weight: 800;
-            font-size: 18px;
-            color: var(--text);
-            margin-bottom: 6px;
-        }
-
-        .sidebar-user-role {
-            font-size: 13px;
-            color: var(--muted);
-            line-height: 1.6;
-        }
+        .sidebar-user-name { font-weight: 800; font-size: 18px; color: var(--text); margin-bottom: 6px; }
+        .sidebar-user-role { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
         .sidebar-section {
             padding: 2px 6px 10px;
@@ -253,12 +261,7 @@ $toastError = flash_get('error');
             color: var(--muted);
         }
 
-        .sidebar-menu {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
+        .sidebar-menu { list-style: none; margin: 0; padding: 0; }
         .sidebar-menu li { margin-bottom: 10px; }
 
         .sidebar-menu a {
@@ -313,7 +316,6 @@ $toastError = flash_get('error');
         }
 
         .main-inner { flex: 1; }
-
         .content-header { padding: 24px 28px 12px; }
 
         .breadcrumb {
@@ -338,12 +340,7 @@ $toastError = flash_get('error');
             color: var(--text);
         }
 
-        .content-subtitle {
-            margin-top: 10px;
-            color: var(--muted);
-            font-size: 15px;
-        }
-
+        .content-subtitle { margin-top: 10px; color: var(--muted); font-size: 15px; }
         .content-body { padding: 0 28px 28px; }
 
         .quick-actions {
@@ -462,10 +459,7 @@ $toastError = flash_get('error');
             margin-bottom: 18px;
         }
 
-        .search-box {
-            width: 100%;
-            max-width: 360px;
-        }
+        .search-box { width: 100%; max-width: 360px; }
 
         .form-label {
             display: block;
@@ -475,9 +469,7 @@ $toastError = flash_get('error');
             color: var(--text);
         }
 
-        .form-control,
-        .form-select,
-        .form-textarea {
+        .form-control, .form-select, .form-textarea {
             width: 100%;
             padding: 12px 14px;
             border: 1px solid var(--line);
@@ -489,19 +481,12 @@ $toastError = flash_get('error');
             font-size: 14px;
         }
 
-        .form-control:focus,
-        .form-select:focus,
-        .form-textarea:focus {
+        .form-control:focus, .form-select:focus, .form-textarea:focus {
             border-color: #93c5fd;
             box-shadow: 0 0 0 4px rgba(59,130,246,.12);
         }
 
-        .form-hint {
-            margin-top: 6px;
-            font-size: 12px;
-            color: var(--muted);
-        }
-
+        .form-hint { margin-top: 6px; font-size: 12px; color: var(--muted); }
         .checkbox-label {
             display: inline-flex;
             align-items: center;
@@ -559,6 +544,12 @@ $toastError = flash_get('error');
             background: var(--table-head-bg);
             color: var(--text);
             font-weight: 800;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .table th.no-sort {
+            cursor: default;
         }
 
         .info-list {
@@ -648,13 +639,8 @@ $toastError = flash_get('error');
             to { opacity: 1; transform: translateY(0) translateX(0); }
         }
 
-        body.sidebar-collapsed .sidebar {
-            transform: translateX(calc(-1 * var(--sidebar-width)));
-        }
-
-        body.sidebar-collapsed .main {
-            margin-left: 0;
-        }
+        body.sidebar-collapsed .sidebar { transform: translateX(calc(-1 * var(--sidebar-width))); }
+        body.sidebar-collapsed .main { margin-left: 0; }
 
         @media (max-width: 1200px) {
             .quick-actions { grid-template-columns: repeat(2, 1fr); }
@@ -672,7 +658,6 @@ $toastError = flash_get('error');
         @media (max-width: 768px) {
             .topbar { padding: 12px 16px; }
             .brand { font-size: 24px; }
-            .topbar-user { display: none; }
             .quick-actions { grid-template-columns: 1fr; }
             .content-header, .content-body, .footer { padding-left: 16px; padding-right: 16px; }
             .footer { flex-direction: column; align-items: flex-start; }
@@ -693,13 +678,24 @@ $toastError = flash_get('error');
                 <button type="button" class="theme-toggle" id="themeToggle">Theme</button>
 
                 <?php if ($user): ?>
-                    <div class="topbar-user">
-                        Login sebagai <strong><?= e($user['name'] ?? '-') ?></strong>
+                    <div class="profile-menu" id="profileMenu">
+                        <button type="button" class="profile-btn" id="profileBtn">
+                            <?= e($user['name'] ?? 'User') ?>
+                        </button>
+
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div class="profile-name"><?= e($user['name'] ?? '-') ?></div>
+                            <div class="profile-email"><?= e($user['email'] ?? '-') ?></div>
+                            <div class="profile-role">
+                                <?= !empty($user['roles']) ? e(implode(', ', $user['roles'])) : 'No role assigned' ?>
+                            </div>
+
+                            <form class="logout-form" action="<?= e(base_url('logout')) ?>" method="POST" data-confirm="Yakin ingin logout?">
+                                <?= csrf_field() ?>
+                                <button class="logout-btn" type="submit">Logout</button>
+                            </form>
+                        </div>
                     </div>
-                    <form class="logout-form" action="<?= e(base_url('logout')) ?>" method="POST" data-confirm="Yakin ingin logout?">
-                        <?= csrf_field() ?>
-                        <button class="logout-btn" type="submit">Logout</button>
-                    </form>
                 <?php endif; ?>
             </div>
         </header>
@@ -788,22 +784,28 @@ $toastError = flash_get('error');
             const overlay = document.getElementById('sidebarOverlay');
             const themeToggle = document.getElementById('themeToggle');
             const themeKey = 'ronmfg_theme';
+            const profileMenu = document.getElementById('profileMenu');
+            const profileBtn = document.getElementById('profileBtn');
 
             function isMobile() {
                 return window.innerWidth <= 900;
             }
 
-            toggle.addEventListener('click', function () {
-                if (isMobile()) {
-                    body.classList.toggle('sidebar-open');
-                } else {
-                    body.classList.toggle('sidebar-collapsed');
-                }
-            });
+            if (toggle) {
+                toggle.addEventListener('click', function () {
+                    if (isMobile()) {
+                        body.classList.toggle('sidebar-open');
+                    } else {
+                        body.classList.toggle('sidebar-collapsed');
+                    }
+                });
+            }
 
-            overlay.addEventListener('click', function () {
-                body.classList.remove('sidebar-open');
-            });
+            if (overlay) {
+                overlay.addEventListener('click', function () {
+                    body.classList.remove('sidebar-open');
+                });
+            }
 
             window.addEventListener('resize', function () {
                 if (!isMobile()) {
@@ -822,12 +824,26 @@ $toastError = flash_get('error');
             const savedTheme = localStorage.getItem(themeKey) || 'light';
             applyTheme(savedTheme);
 
-            themeToggle.addEventListener('click', function () {
-                const currentTheme = body.classList.contains('theme-dark') ? 'dark' : 'light';
-                const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                localStorage.setItem(themeKey, nextTheme);
-                applyTheme(nextTheme);
-            });
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function () {
+                    const currentTheme = body.classList.contains('theme-dark') ? 'dark' : 'light';
+                    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    localStorage.setItem(themeKey, nextTheme);
+                    applyTheme(nextTheme);
+                });
+            }
+
+            if (profileBtn && profileMenu) {
+                profileBtn.addEventListener('click', function () {
+                    profileMenu.classList.toggle('open');
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!profileMenu.contains(e.target)) {
+                        profileMenu.classList.remove('open');
+                    }
+                });
+            }
 
             document.querySelectorAll('[data-confirm]').forEach(function (el) {
                 el.addEventListener('submit', function (e) {
@@ -861,8 +877,48 @@ $toastError = flash_get('error');
                     if (!table) return;
 
                     table.querySelectorAll('tbody tr').forEach(function (row) {
+                        if (row.classList.contains('empty-row')) return;
                         const text = row.innerText.toLowerCase();
                         row.style.display = text.includes(keyword) ? '' : 'none';
+                    });
+                });
+            });
+
+            document.querySelectorAll('.sortable-table').forEach(function (table) {
+                const headers = table.querySelectorAll('thead th');
+
+                headers.forEach(function (header, index) {
+                    if (header.classList.contains('no-sort')) return;
+
+                    let asc = true;
+
+                    header.addEventListener('click', function () {
+                        const tbody = table.querySelector('tbody');
+                        const rows = Array.from(tbody.querySelectorAll('tr')).filter(function (row) {
+                            return !row.classList.contains('empty-row');
+                        });
+
+                        rows.sort(function (a, b) {
+                            const aText = (a.children[index]?.innerText || '').trim().toLowerCase();
+                            const bText = (b.children[index]?.innerText || '').trim().toLowerCase();
+
+                            const aNum = parseFloat(aText);
+                            const bNum = parseFloat(bText);
+
+                            if (!isNaN(aNum) && !isNaN(bNum)) {
+                                return asc ? aNum - bNum : bNum - aNum;
+                            }
+
+                            return asc
+                                ? aText.localeCompare(bText)
+                                : bText.localeCompare(aText);
+                        });
+
+                        rows.forEach(function (row) {
+                            tbody.appendChild(row);
+                        });
+
+                        asc = !asc;
                     });
                 });
             });
