@@ -44,10 +44,6 @@ $toastError = flash_get('error');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle) ?></title>
     <style>
-        html {
-            scroll-behavior: smooth;
-        }
-
         :root {
             --sidebar-width: 300px;
             --topbar-height: 72px;
@@ -864,7 +860,7 @@ $toastError = flash_get('error');
                         }, 300);
                     });
                 }, 2800);
-            }
+            });
 
             document.querySelectorAll('.sortable-table').forEach(function (table) {
                 const headers = table.querySelectorAll('thead th');
