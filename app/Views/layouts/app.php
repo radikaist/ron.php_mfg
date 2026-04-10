@@ -185,25 +185,9 @@ $toastError = flash_get('error');
         }
 
         .profile-menu.open .profile-dropdown { display: block; }
-
-        .profile-name {
-            font-weight: 800;
-            margin-bottom: 4px;
-            color: var(--text);
-        }
-
-        .profile-email {
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 10px;
-        }
-
-        .profile-role {
-            font-size: 12px;
-            color: var(--muted);
-            line-height: 1.6;
-            margin-bottom: 12px;
-        }
+        .profile-name { font-weight: 800; margin-bottom: 4px; color: var(--text); }
+        .profile-email { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+        .profile-role { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
 
         .logout-form { margin: 0; }
         .logout-btn {
@@ -495,6 +479,46 @@ $toastError = flash_get('error');
             color: var(--text);
         }
 
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .checkbox-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: var(--input-bg);
+            transition: .2s ease;
+        }
+
+        .checkbox-card:hover {
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 3px rgba(59,130,246,.08);
+        }
+
+        .checkbox-card input[type="checkbox"] {
+            margin-top: 3px;
+            transform: scale(1.15);
+        }
+
+        .checkbox-card-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .checkbox-card-meta {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
         .btn {
             display: inline-flex;
             align-items: center;
@@ -548,9 +572,7 @@ $toastError = flash_get('error');
             user-select: none;
         }
 
-        .table th.no-sort {
-            cursor: default;
-        }
+        .table th.no-sort { cursor: default; }
 
         .info-list {
             display: flex;
@@ -645,6 +667,7 @@ $toastError = flash_get('error');
         @media (max-width: 1200px) {
             .quick-actions { grid-template-columns: repeat(2, 1fr); }
             .col-3, .col-4, .col-5, .col-6, .col-7, .col-8 { grid-column: span 12; }
+            .checkbox-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 900px) {

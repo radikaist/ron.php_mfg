@@ -23,19 +23,34 @@
 
                 <div class="col-12">
                     <label class="form-label">Permissions</label>
+
                     <?php
                     $selectedPermissionIds = old_or('permission_ids', $roleData['permission_ids']);
                     if (!is_array($selectedPermissionIds)) {
                         $selectedPermissionIds = [];
                     }
+                    $selectedPermissionIds = array_map('strval', $selectedPermissionIds);
                     ?>
-                    <select name="permission_ids[]" multiple class="form-select" style="min-height:220px;">
+
+                    <div class="checkbox-grid">
                         <?php foreach ($permissions as $permission): ?>
-                            <option value="<?= e((string) $permission['id']) ?>" <?= in_array((string) $permission['id'], array_map('strval', $selectedPermissionIds), true) ? 'selected' : '' ?>>
-                                [<?= e($permission['module']) ?>] <?= e($permission['name']) ?> (<?= e($permission['code']) ?>)
-                            </option>
+                            <?php $checked = in_array((string) $permission['id'], $selectedPermissionIds, true); ?>
+                            <label class="checkbox-card">
+                                <input type="checkbox" name="permission_ids[]" value="<?= e((string) $permission['id']) ?>" <?= $checked ? 'checked' : '' ?>>
+                                <div>
+                                    <div class="checkbox-card-title">
+                                        <?= e($permission['name']) ?>
+                                    </div>
+                                    <div class="checkbox-card-meta">
+                                        Module: <strong><?= e($permission['module']) ?></strong><br>
+                                        Code: <strong><?= e($permission['code']) ?></strong>
+                                    </div>
+                                </div>
+                            </label>
                         <?php endforeach; ?>
-                    </select>
+                    </div>
+
+                    <div class="form-hint">Centang atau hilangkan centang untuk mengatur permission role ini.</div>
                 </div>
 
                 <div class="col-12">
