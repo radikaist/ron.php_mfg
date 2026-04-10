@@ -42,7 +42,7 @@ function sidebar_menu(): array
         ],
     ];
 
-    return array_values(array_filter($items, function (array $item) {
+    return array_values(array_filter($items, function (array $item): bool {
         return can($item['permission']);
     }));
 }

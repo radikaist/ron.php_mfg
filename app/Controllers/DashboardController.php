@@ -18,8 +18,10 @@ class DashboardController extends Controller
 
         if (!Auth::can('dashboard.view')) {
             http_response_code(403);
-            echo '403 Forbidden';
-            exit;
+            $this->view('errors/403', [
+                'title' => '403 Forbidden',
+            ]);
+            return;
         }
 
         $this->view('dashboard/index', [

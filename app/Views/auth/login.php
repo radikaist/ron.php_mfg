@@ -2,14 +2,14 @@
     <?= csrf_field() ?>
 
     <div class="form-group">
-        <label>Username</label>
-        <input type="text" name="username" value="<?= e(old('username')) ?>" autocomplete="off">
+        <label class="form-label">Username</label>
+        <input class="form-control" type="text" name="username" value="<?= e(old('username')) ?>" autocomplete="off" placeholder="Masukkan username">
     </div>
 
     <div class="form-group">
-        <label>Password</label>
-        <input type="password" name="password">
+        <label class="form-label">Password</label>
+        <input class="form-control" type="password" name="password" placeholder="Masukkan password">
     </div>
 
-    <button type="submit">Login</button>
+    <button class="btn" type="submit">Sign In</button>
 </form>
