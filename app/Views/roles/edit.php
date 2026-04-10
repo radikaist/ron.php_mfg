@@ -1,3 +1,17 @@
+<?php
+$selectedPermissionIds = old_or('permission_ids', $roleData['permission_ids']);
+if (!is_array($selectedPermissionIds)) {
+    $selectedPermissionIds = [];
+}
+$selectedPermissionIds = array_map('strval', $selectedPermissionIds);
+
+$groupedPermissions = [];
+foreach ($permissions as $permission) {
+    $module = $permission['module'] ?: 'general';
+    $groupedPermissions[$module][] = $permission;
+}
+ksort($groupedPermissions);
+?>
 <div class="card">
     <div class="card-header">Edit Role</div>
     <div class="card-body">
@@ -24,37 +38,51 @@
                 <div class="col-12">
                     <label class="form-label">Permissions</label>
 
-                    <?php
-                    $selectedPermissionIds = old_or('permission_ids', $roleData['permission_ids']);
-                    if (!is_array($selectedPermissionIds)) {
-                        $selectedPermissionIds = [];
-                    }
-                    $selectedPermissionIds = array_map('strval', $selectedPermissionIds);
-                    ?>
+                    <div data-permission-panel>
+                        <div class="permission-tools">
+                            <button type="button" class="permission-tool-btn" data-check-all>Check All</button>
+                            <button type="button" class="permission-tool-btn" data-uncheck-all>Uncheck All</button>
+                            <div class="permission-counter" data-permission-counter>0 permission dipilih</div>
+                        </div>
 
-                    <div class="checkbox-list">
-                        <?php foreach ($permissions as $permission): ?>
-                            <?php
-                            $permissionId = (string) $permission['id'];
-                            $isChecked = in_array($permissionId, $selectedPermissionIds, true);
-                            ?>
-                            <label class="checkbox-item">
-                                <input
-                                    type="checkbox"
-                                    name="permission_ids[]"
-                                    value="<?= e($permissionId) ?>"
-                                    <?= $isChecked ? 'checked' : '' ?>
-                                >
-                                <span class="checkbox-item-text">
-                                    <span class="checkbox-item-title">
-                                        [<?= e($permission['module']) ?>] <?= e($permission['name']) ?>
-                                    </span>
-                                    <span class="checkbox-item-desc">
-                                        Code: <?= e($permission['code']) ?>
-                                    </span>
-                                </span>
-                            </label>
-                        <?php endforeach; ?>
+                        <div class="permission-group-wrap">
+                            <?php foreach ($groupedPermissions as $module => $modulePermissions): ?>
+                                <div class="permission-group">
+                                    <div class="permission-group-header" data-group-toggle>
+                                        <div class="permission-group-title"><?= e($module) ?></div>
+                                        <div class="permission-group-meta">
+                                            <span><?= e((string) count($modulePermissions)) ?> item</span>
+                                            <span>▼</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="permission-group-body">
+                                        <?php foreach ($modulePermissions as $permission): ?>
+                                            <?php
+                                            $permissionId = (string) $permission['id'];
+                                            $isChecked = in_array($permissionId, $selectedPermissionIds, true);
+                                            ?>
+                                            <label class="checkbox-item">
+                                                <input
+                                                    type="checkbox"
+                                                    name="permission_ids[]"
+                                                    value="<?= e($permissionId) ?>"
+                                                    <?= $isChecked ? 'checked' : '' ?>
+                                                >
+                                                <span class="checkbox-item-text">
+                                                    <span class="checkbox-item-title">
+                                                        <?= e($permission['name']) ?>
+                                                    </span>
+                                                    <span class="checkbox-item-desc">
+                                                        Code: <?= e($permission['code']) ?><?= $permission['description'] ? ' • ' . e($permission['description']) : '' ?>
+                                                    </span>
+                                                </span>
+                                            </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
 
                     <div class="form-hint">

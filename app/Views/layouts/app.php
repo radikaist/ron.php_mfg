@@ -480,13 +480,85 @@ $toastError = flash_get('error');
             color: var(--text);
         }
 
-        .checkbox-list {
+        .permission-tools {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .permission-tool-btn {
+            border: 1px solid var(--line);
+            background: transparent;
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .permission-counter {
+            margin-left: auto;
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .permission-group-wrap {
             border: 1px solid var(--line);
             background: var(--input-bg);
             border-radius: 18px;
-            max-height: 260px;
+            max-height: 320px;
             overflow-y: auto;
             padding: 10px;
+        }
+
+        .permission-group {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            background: rgba(255,255,255,.25);
+        }
+
+        .permission-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .permission-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            background: rgba(59,130,246,.06);
+        }
+
+        .permission-group-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text);
+            text-transform: capitalize;
+        }
+
+        .permission-group-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .permission-group-body {
+            padding: 8px;
+        }
+
+        .permission-group.collapsed .permission-group-body {
+            display: none;
         }
 
         .checkbox-item {
@@ -694,6 +766,7 @@ $toastError = flash_get('error');
             .footer { flex-direction: column; align-items: flex-start; }
             .toast-wrap { left: 16px; right: 16px; top: 82px; }
             .toast { max-width: unset; min-width: unset; width: 100%; }
+            .permission-counter { width: 100%; margin-left: 0; }
         }
     </style>
 </head>
@@ -952,6 +1025,57 @@ $toastError = flash_get('error');
                         asc = !asc;
                     });
                 });
+            });
+
+            document.querySelectorAll('[data-permission-panel]').forEach(function (panel) {
+                const checkboxes = panel.querySelectorAll('input[type="checkbox"][name="permission_ids[]"]');
+                const counter = panel.querySelector('[data-permission-counter]');
+                const checkAllBtn = panel.querySelector('[data-check-all]');
+                const uncheckAllBtn = panel.querySelector('[data-uncheck-all]');
+
+                function updateCounter() {
+                    let checked = 0;
+                    checkboxes.forEach(function (checkbox) {
+                        if (checkbox.checked) checked++;
+                    });
+
+                    if (counter) {
+                        counter.textContent = checked + ' permission dipilih';
+                    }
+                }
+
+                if (checkAllBtn) {
+                    checkAllBtn.addEventListener('click', function () {
+                        checkboxes.forEach(function (checkbox) {
+                            checkbox.checked = true;
+                        });
+                        updateCounter();
+                    });
+                }
+
+                if (uncheckAllBtn) {
+                    uncheckAllBtn.addEventListener('click', function () {
+                        checkboxes.forEach(function (checkbox) {
+                            checkbox.checked = false;
+                        });
+                        updateCounter();
+                    });
+                }
+
+                checkboxes.forEach(function (checkbox) {
+                    checkbox.addEventListener('change', updateCounter);
+                });
+
+                panel.querySelectorAll('[data-group-toggle]').forEach(function (toggleBtn) {
+                    toggleBtn.addEventListener('click', function () {
+                        const group = toggleBtn.closest('.permission-group');
+                        if (group) {
+                            group.classList.toggle('collapsed');
+                        }
+                    });
+                });
+
+                updateCounter();
             });
         })();
     </script>
