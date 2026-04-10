@@ -51,11 +51,15 @@ class RbacHealthCheck extends Model
         $routes = require ROUTES_PATH . '/web.php';
         $permissionCodes = $this->registeredPermissionCodes();
         $ignoredRoutes = $this->ignoredRoutes();
-
         $results = [];
 
         foreach ($routes as $route) {
-            [$method, $uri] = $route;
+            if (!isset($route[0], $route[1])) {
+                continue;
+            }
+
+            $method = (string) $route[0];
+            $uri = (string) $route[1];
 
             $routeKey = strtoupper($method) . ' ' . $uri;
             if (in_array($routeKey, $ignoredRoutes, true)) {
@@ -92,7 +96,12 @@ class RbacHealthCheck extends Model
         $routeCodes = [];
 
         foreach ($routes as $route) {
-            [$method, $uri] = $route;
+            if (!isset($route[0], $route[1])) {
+                continue;
+            }
+
+            $method = (string) $route[0];
+            $uri = (string) $route[1];
 
             $routeKey = strtoupper($method) . ' ' . $uri;
             if (in_array($routeKey, $this->ignoredRoutes(), true)) {
@@ -120,7 +129,7 @@ class RbacHealthCheck extends Model
         $permissions = $stmt->fetchAll();
 
         return array_values(array_filter($permissions, function (array $permission) use ($routeCodes): bool {
-            return !in_array($permission['code'], $routeCodes, true);
+            return !in_array((string) $permission['code'], $routeCodes, true);
         }));
     }
 
@@ -283,7 +292,7 @@ class RbacHealthCheck extends Model
         $permissions = $stmt->fetchAll();
 
         return array_values(array_filter($permissions, function (array $permission) use ($usedPermissions): bool {
-            return !in_array($permission['code'], $usedPermissions, true);
+            return !in_array((string) $permission['code'], $usedPermissions, true);
         }));
     }
 
@@ -387,7 +396,13 @@ class RbacHealthCheck extends Model
         $results = [];
 
         foreach ($routes as $route) {
-            [$method, $uri, $action] = $route;
+            if (!isset($route[0], $route[1], $route[2])) {
+                continue;
+            }
+
+            $method = (string) $route[0];
+            $uri = (string) $route[1];
+            $action = $route[2];
 
             $routeKey = strtoupper($method) . ' ' . $uri;
             if (in_array($routeKey, $ignoredRoutes, true)) {
@@ -416,8 +431,8 @@ class RbacHealthCheck extends Model
                 continue;
             }
 
-            $methodBody = $this->extractMethodBody($content, $controllerMethod);
-            if ($methodBody === null) {
+            $methodBody = $this->extractMethodBlock($content, $controllerMethod);
+            if ($methodBody === '') {
                 continue;
             }
 
@@ -440,12 +455,26 @@ class RbacHealthCheck extends Model
         return $results;
     }
 
+    private function extractMethodBlock(string $content, string $methodName): string
+    {
+        $needle = 'function ' . $methodName . '(';
+        $pos = strpos($content, $needle);
+
+        if ($pos === false) {
+            return '';
+        }
+
+        $slice = substr($content, $pos, 5000);
+
+        return $slice === false ? '' : $slice;
+    }
+
     private function extractPermissionsFromMethod(string $methodBody): array
     {
         $matches = [];
 
         preg_match_all("/Auth::can\\(['\"]([^'\"]+)['\"]\\)/", $methodBody, $authCanMatches);
-        preg_match_all("/[^a-zA-Z0-9_]can\\(['\"]([^'\"]+)['\"]\\)/", $methodBody, $helperCanMatches);
+        preg_match_all("/(?<![a-zA-Z0-9_])can\\(['\"]([^'\"]+)['\"]\\)/", $methodBody, $helperCanMatches);
 
         foreach ($authCanMatches[1] ?? [] as $item) {
             $matches[] = $item;
@@ -456,23 +485,6 @@ class RbacHealthCheck extends Model
         }
 
         return array_values(array_unique($matches));
-    }
-
-    private function extractMethodBody(string $content, string $methodName): ?string
-    {
-        $pattern = '/function\s+' . preg_quote($methodName, '/') . '\s*\([^)]*\)\s*:\s*void\s*\{([\s\S]*?)\n\s*\}/';
-
-        if (preg_match($pattern, $content, $matches)) {
-            return $matches[1] ?? null;
-        }
-
-        $patternNoReturnType = '/function\s+' . preg_quote($methodName, '/') . '\s*\([^)]*\)\s*\{([\s\S]*?)\n\s*\}/';
-
-        if (preg_match($patternNoReturnType, $content, $matches)) {
-            return $matches[1] ?? null;
-        }
-
-        return null;
     }
 
     private function registeredPermissionCodes(): array
@@ -533,6 +545,29 @@ class RbacHealthCheck extends Model
         }
 
         return $module . '.view';
+    }
+
+    private function guessPermissionName(string $method, string $uri, string $module): string
+    {
+        $code = $this->guessPermissionCode($method, $uri, $module);
+
+        if (str_ends_with($code, '.view')) {
+            return 'View ' . ucwords(str_replace('_', ' ', $module));
+        }
+
+        if (str_ends_with($code, '.create')) {
+            return 'Create ' . ucwords(str_replace('_', ' ', $module));
+        }
+
+        if (str_ends_with($code, '.edit')) {
+            return 'Edit ' . ucwords(str_replace('_', ' ', $module));
+        }
+
+        if (str_ends_with($code, '.delete')) {
+            return 'Delete ' . ucwords(str_replace('_', ' ', $module));
+        }
+
+        return ucwords(str_replace('_', ' ', $module));
     }
 
     private function humanizePermissionName(string $permission): string
