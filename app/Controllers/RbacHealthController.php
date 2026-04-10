@@ -37,6 +37,9 @@ class RbacHealthController extends Controller
             'inactiveRolesUsed' => $health->inactiveRolesStillAssigned(),
             'inactivePermissionsUsed' => $health->inactivePermissionsStillAssigned(),
             'controllerActionsWithoutPermissionCheck' => $health->controllerActionsWithoutPermissionCheck(),
+            'permissionMismatchInControllers' => $health->permissionMismatchInControllers(),
+            'controllerPermissionNotRegistered' => $health->controllerPermissionNotRegistered(),
+            'registeredButUnusedPermissions' => $health->registeredButUnusedPermissions(),
         ]);
     }
 }

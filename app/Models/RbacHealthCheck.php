@@ -16,7 +16,10 @@ class RbacHealthCheck extends Model
         $usersWithoutRole = count($this->usersWithoutRole());
         $inactiveRolesUsed = count($this->inactiveRolesStillAssigned());
         $inactivePermissionsUsed = count($this->inactivePermissionsStillAssigned());
-        $unprotectedControllerActions = count($this->controllerActionsWithoutPermissionCheck());
+        $controllerActionsWithoutPermissionCheck = count($this->controllerActionsWithoutPermissionCheck());
+        $permissionMismatch = count($this->permissionMismatchInControllers());
+        $controllerPermissionNotRegistered = count($this->controllerPermissionNotRegistered());
+        $registeredButUnusedPermissions = count($this->registeredButUnusedPermissions());
 
         return [
             'routes_without_permission' => $routesWithoutPermission,
@@ -25,25 +28,27 @@ class RbacHealthCheck extends Model
             'users_without_role' => $usersWithoutRole,
             'inactive_roles_used' => $inactiveRolesUsed,
             'inactive_permissions_used' => $inactivePermissionsUsed,
-            'controller_actions_without_permission_check' => $unprotectedControllerActions,
+            'controller_actions_without_permission_check' => $controllerActionsWithoutPermissionCheck,
+            'permission_mismatch_in_controllers' => $permissionMismatch,
+            'controller_permission_not_registered' => $controllerPermissionNotRegistered,
+            'registered_but_unused_permissions' => $registeredButUnusedPermissions,
             'total_issues' => $routesWithoutPermission
                 + $permissionsWithoutRoute
                 + $rolesWithoutPermission
                 + $usersWithoutRole
                 + $inactiveRolesUsed
                 + $inactivePermissionsUsed
-                + $unprotectedControllerActions,
+                + $controllerActionsWithoutPermissionCheck
+                + $permissionMismatch
+                + $controllerPermissionNotRegistered
+                + $registeredButUnusedPermissions,
         ];
     }
 
     public function routesWithoutPermission(): array
     {
         $routes = require ROUTES_PATH . '/web.php';
-
-        $permissionModel = new Permission();
-        $permissions = $permissionModel->all();
-        $permissionCodes = array_map(static fn(array $item): string => (string) $item['code'], $permissions);
-
+        $permissionCodes = $this->registeredPermissionCodes();
         $ignoredRoutes = $this->ignoredRoutes();
 
         $results = [];
@@ -182,6 +187,102 @@ class RbacHealthCheck extends Model
 
     public function controllerActionsWithoutPermissionCheck(): array
     {
+        $mappedRoutes = $this->mappedControllerRoutes();
+        $results = [];
+
+        foreach ($mappedRoutes as $item) {
+            $hasPermissionCheck = !empty($item['actual_permissions']);
+
+            if (!$hasPermissionCheck) {
+                $results[] = [
+                    'method' => $item['method'],
+                    'uri' => $item['uri'],
+                    'controller' => $item['controller'],
+                    'action' => $item['action'],
+                    'note' => 'Controller method kemungkinan belum melakukan permission check.',
+                ];
+            }
+        }
+
+        return $results;
+    }
+
+    public function permissionMismatchInControllers(): array
+    {
+        $mappedRoutes = $this->mappedControllerRoutes();
+        $results = [];
+
+        foreach ($mappedRoutes as $item) {
+            if (empty($item['actual_permissions'])) {
+                continue;
+            }
+
+            if (!in_array($item['expected_permission'], $item['actual_permissions'], true)) {
+                $results[] = [
+                    'method' => $item['method'],
+                    'uri' => $item['uri'],
+                    'controller' => $item['controller'],
+                    'action' => $item['action'],
+                    'expected_permission' => $item['expected_permission'],
+                    'actual_permissions' => implode(', ', $item['actual_permissions']),
+                ];
+            }
+        }
+
+        return $results;
+    }
+
+    public function controllerPermissionNotRegistered(): array
+    {
+        $mappedRoutes = $this->mappedControllerRoutes();
+        $registeredCodes = $this->registeredPermissionCodes();
+        $results = [];
+
+        foreach ($mappedRoutes as $item) {
+            foreach ($item['actual_permissions'] as $permission) {
+                if (!in_array($permission, $registeredCodes, true)) {
+                    $results[] = [
+                        'method' => $item['method'],
+                        'uri' => $item['uri'],
+                        'controller' => $item['controller'],
+                        'action' => $item['action'],
+                        'permission' => $permission,
+                    ];
+                }
+            }
+        }
+
+        return $results;
+    }
+
+    public function registeredButUnusedPermissions(): array
+    {
+        $mappedRoutes = $this->mappedControllerRoutes();
+        $usedPermissions = [];
+
+        foreach ($mappedRoutes as $item) {
+            foreach ($item['actual_permissions'] as $permission) {
+                $usedPermissions[] = $permission;
+            }
+        }
+
+        $usedPermissions = array_unique($usedPermissions);
+
+        $stmt = $this->db->query("
+            SELECT id, name, code, module, is_active
+            FROM permissions
+            ORDER BY module ASC, code ASC
+        ");
+
+        $permissions = $stmt->fetchAll();
+
+        return array_values(array_filter($permissions, function (array $permission) use ($usedPermissions): bool {
+            return !in_array($permission['code'], $usedPermissions, true);
+        }));
+    }
+
+    private function mappedControllerRoutes(): array
+    {
         $routes = require ROUTES_PATH . '/web.php';
         $ignoredRoutes = $this->ignoredRoutes();
         $results = [];
@@ -217,28 +318,45 @@ class RbacHealthCheck extends Model
             }
 
             $methodBody = $this->extractMethodBody($content, $controllerMethod);
-
             if ($methodBody === null) {
                 continue;
             }
 
-            $hasPermissionCheck =
-                str_contains($methodBody, 'Auth::can(') ||
-                str_contains($methodBody, "can('") ||
-                str_contains($methodBody, 'can("');
+            $normalized = trim($uri, '/');
+            $segments = explode('/', $normalized);
+            $module = str_replace('-', '_', $segments[0] ?? 'general');
+            $expectedPermission = $this->guessPermissionCode($method, $uri, $module);
+            $actualPermissions = $this->extractPermissionsFromMethod($methodBody);
 
-            if (!$hasPermissionCheck) {
-                $results[] = [
-                    'method' => strtoupper($method),
-                    'uri' => $uri,
-                    'controller' => $controllerShortName,
-                    'action' => $controllerMethod,
-                    'note' => 'Controller method kemungkinan belum melakukan permission check.',
-                ];
-            }
+            $results[] = [
+                'method' => strtoupper($method),
+                'uri' => $uri,
+                'controller' => $controllerShortName,
+                'action' => $controllerMethod,
+                'expected_permission' => $expectedPermission,
+                'actual_permissions' => $actualPermissions,
+            ];
         }
 
         return $results;
+    }
+
+    private function extractPermissionsFromMethod(string $methodBody): array
+    {
+        $matches = [];
+
+        preg_match_all("/Auth::can\\(['\"]([^'\"]+)['\"]\\)/", $methodBody, $authCanMatches);
+        preg_match_all("/[^a-zA-Z0-9_]can\\(['\"]([^'\"]+)['\"]\\)/", $methodBody, $helperCanMatches);
+
+        foreach ($authCanMatches[1] ?? [] as $item) {
+            $matches[] = $item;
+        }
+
+        foreach ($helperCanMatches[1] ?? [] as $item) {
+            $matches[] = $item;
+        }
+
+        return array_values(array_unique($matches));
     }
 
     private function extractMethodBody(string $content, string $methodName): ?string
@@ -256,6 +374,12 @@ class RbacHealthCheck extends Model
         }
 
         return null;
+    }
+
+    private function registeredPermissionCodes(): array
+    {
+        $stmt = $this->db->query("SELECT code FROM permissions");
+        return array_map(static fn(array $row): string => (string) $row['code'], $stmt->fetchAll());
     }
 
     private function ignoredRoutes(): array

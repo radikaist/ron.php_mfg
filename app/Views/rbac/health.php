@@ -12,26 +12,26 @@
         <div class="small-box bg-orange">
             <div class="label">Route Without Permission</div>
             <div class="value"><?= e((string) ($summary['routes_without_permission'] ?? 0)) ?></div>
-            <div class="desc">Route yang belum memiliki permission terdaftar.</div>
-            <div class="mini">Audit Route</div>
+            <div class="desc">Route yang belum punya permission.</div>
+            <div class="mini">Route Audit</div>
         </div>
     </div>
 
     <div class="col-3">
         <div class="small-box bg-pink">
-            <div class="label">Permission Without Route</div>
-            <div class="value"><?= e((string) ($summary['permissions_without_route'] ?? 0)) ?></div>
-            <div class="desc">Permission yang tidak punya route yang cocok.</div>
-            <div class="mini">Audit Permission</div>
+            <div class="label">Mismatch in Controller</div>
+            <div class="value"><?= e((string) ($summary['permission_mismatch_in_controllers'] ?? 0)) ?></div>
+            <div class="desc">Expected permission berbeda dengan actual permission di controller.</div>
+            <div class="mini">Mismatch Audit</div>
         </div>
     </div>
 
     <div class="col-3">
         <div class="small-box bg-green">
-            <div class="label">Unprotected Actions</div>
-            <div class="value"><?= e((string) ($summary['controller_actions_without_permission_check'] ?? 0)) ?></div>
-            <div class="desc">Controller action yang belum mendeteksi permission check.</div>
-            <div class="mini">Controller Audit</div>
+            <div class="label">Controller Permission Missing</div>
+            <div class="value"><?= e((string) ($summary['controller_permission_not_registered'] ?? 0)) ?></div>
+            <div class="desc">Permission dipakai di controller tapi belum ada di database.</div>
+            <div class="mini">Registration Audit</div>
         </div>
     </div>
 </div>
@@ -41,8 +41,8 @@
         <div class="small-box bg-green">
             <div class="label">Roles Without Permission</div>
             <div class="value"><?= e((string) ($summary['roles_without_permission'] ?? 0)) ?></div>
-            <div class="desc">Role tanpa permission terpasang.</div>
-            <div class="mini">Role Mapping</div>
+            <div class="desc">Role tanpa permission sama sekali.</div>
+            <div class="mini">Role Audit</div>
         </div>
     </div>
 
@@ -50,17 +50,17 @@
         <div class="small-box bg-orange">
             <div class="label">Users Without Role</div>
             <div class="value"><?= e((string) ($summary['users_without_role'] ?? 0)) ?></div>
-            <div class="desc">User belum memiliki role apapun.</div>
-            <div class="mini">User Mapping</div>
+            <div class="desc">User belum memiliki role.</div>
+            <div class="mini">User Audit</div>
         </div>
     </div>
 
     <div class="col-4">
         <div class="small-box bg-pink">
-            <div class="label">Inactive Mapping Issues</div>
-            <div class="value"><?= e((string) (($summary['inactive_roles_used'] ?? 0) + ($summary['inactive_permissions_used'] ?? 0))) ?></div>
-            <div class="desc">Role/permission nonaktif namun masih digunakan.</div>
-            <div class="mini">Inactive Relation</div>
+            <div class="label">Unused Registered Permissions</div>
+            <div class="value"><?= e((string) ($summary['registered_but_unused_permissions'] ?? 0)) ?></div>
+            <div class="desc">Permission terdaftar tetapi belum terdeteksi dipakai di controller.</div>
+            <div class="mini">Usage Audit</div>
         </div>
     </div>
 </div>
@@ -100,47 +100,7 @@
 <div style="height:22px;"></div>
 
 <div class="card">
-    <div class="card-header">2. Permission Tanpa Route</div>
-    <div class="card-body">
-        <?php if (!empty($permissionsWithoutRoute)): ?>
-            <table class="table sortable-table">
-                <thead>
-                    <tr>
-                        <th width="80">ID</th>
-                        <th>Nama</th>
-                        <th>Code</th>
-                        <th>Module</th>
-                        <th width="120">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($permissionsWithoutRoute as $row): ?>
-                        <tr>
-                            <td><?= e((string) $row['id']) ?></td>
-                            <td><?= e($row['name']) ?></td>
-                            <td><?= e($row['code']) ?></td>
-                            <td><?= e($row['module']) ?></td>
-                            <td>
-                                <?php if ((int) $row['is_active'] === 1): ?>
-                                    <span class="badge badge-green">Active</span>
-                                <?php else: ?>
-                                    <span class="badge badge-orange">Inactive</span>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else: ?>
-            <div class="muted">Tidak ada permission yatim tanpa route.</div>
-        <?php endif; ?>
-    </div>
-</div>
-
-<div style="height:22px;"></div>
-
-<div class="card">
-    <div class="card-header">3. Controller Action Tanpa Permission Check</div>
+    <div class="card-header">2. Controller Action Tanpa Permission Check</div>
     <div class="card-body">
         <?php if (!empty($controllerActionsWithoutPermissionCheck)): ?>
             <table class="table sortable-table">
@@ -173,10 +133,120 @@
 
 <div style="height:22px;"></div>
 
+<div class="card">
+    <div class="card-header">3. Expected Permission vs Actual Permission di Controller</div>
+    <div class="card-body">
+        <?php if (!empty($permissionMismatchInControllers)): ?>
+            <table class="table sortable-table">
+                <thead>
+                    <tr>
+                        <th width="100">Method</th>
+                        <th>URI</th>
+                        <th>Controller</th>
+                        <th>Action</th>
+                        <th>Expected</th>
+                        <th>Actual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($permissionMismatchInControllers as $row): ?>
+                        <tr>
+                            <td><?= e($row['method']) ?></td>
+                            <td><?= e($row['uri']) ?></td>
+                            <td><?= e($row['controller']) ?></td>
+                            <td><?= e($row['action']) ?></td>
+                            <td><span class="badge badge-orange"><?= e($row['expected_permission']) ?></span></td>
+                            <td><span class="badge badge-pink"><?= e($row['actual_permissions']) ?></span></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div class="muted">Tidak ditemukan mismatch antara expected permission dan actual permission di controller.</div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div style="height:22px;"></div>
+
+<div class="card">
+    <div class="card-header">4. Permission Dipakai di Controller Tapi Belum Terdaftar</div>
+    <div class="card-body">
+        <?php if (!empty($controllerPermissionNotRegistered)): ?>
+            <table class="table sortable-table">
+                <thead>
+                    <tr>
+                        <th width="100">Method</th>
+                        <th>URI</th>
+                        <th>Controller</th>
+                        <th>Action</th>
+                        <th>Permission</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($controllerPermissionNotRegistered as $row): ?>
+                        <tr>
+                            <td><?= e($row['method']) ?></td>
+                            <td><?= e($row['uri']) ?></td>
+                            <td><?= e($row['controller']) ?></td>
+                            <td><?= e($row['action']) ?></td>
+                            <td><span class="badge badge-pink"><?= e($row['permission']) ?></span></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div class="muted">Tidak ada permission yang dipakai controller namun belum terdaftar di database.</div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div style="height:22px;"></div>
+
+<div class="card">
+    <div class="card-header">5. Permission Terdaftar Tapi Belum Terdeteksi Dipakai di Controller</div>
+    <div class="card-body">
+        <?php if (!empty($registeredButUnusedPermissions)): ?>
+            <table class="table sortable-table">
+                <thead>
+                    <tr>
+                        <th width="80">ID</th>
+                        <th>Nama</th>
+                        <th>Code</th>
+                        <th>Module</th>
+                        <th width="120">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($registeredButUnusedPermissions as $row): ?>
+                        <tr>
+                            <td><?= e((string) $row['id']) ?></td>
+                            <td><?= e($row['name']) ?></td>
+                            <td><?= e($row['code']) ?></td>
+                            <td><?= e($row['module']) ?></td>
+                            <td>
+                                <?php if ((int) $row['is_active'] === 1): ?>
+                                    <span class="badge badge-green">Active</span>
+                                <?php else: ?>
+                                    <span class="badge badge-orange">Inactive</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div class="muted">Semua permission terdaftar sudah terdeteksi dipakai di controller.</div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div style="height:22px;"></div>
+
 <div class="grid">
     <div class="col-6">
         <div class="card">
-            <div class="card-header">4. Role Tanpa Permission</div>
+            <div class="card-header">6. Role Tanpa Permission</div>
             <div class="card-body">
                 <?php if (!empty($rolesWithoutPermission)): ?>
                     <table class="table sortable-table">
@@ -214,7 +284,7 @@
 
     <div class="col-6">
         <div class="card">
-            <div class="card-header">5. User Tanpa Role</div>
+            <div class="card-header">7. User Tanpa Role</div>
             <div class="card-body">
                 <?php if (!empty($usersWithoutRole)): ?>
                     <table class="table sortable-table">
@@ -256,7 +326,7 @@
 <div class="grid">
     <div class="col-6">
         <div class="card">
-            <div class="card-header">6. Role Nonaktif Tapi Masih Dipakai</div>
+            <div class="card-header">8. Role Nonaktif Tapi Masih Dipakai</div>
             <div class="card-body">
                 <?php if (!empty($inactiveRolesUsed)): ?>
                     <table class="table sortable-table">
@@ -288,7 +358,7 @@
 
     <div class="col-6">
         <div class="card">
-            <div class="card-header">7. Permission Nonaktif Tapi Masih Dipakai</div>
+            <div class="card-header">9. Permission Nonaktif Tapi Masih Dipakai</div>
             <div class="card-body">
                 <?php if (!empty($inactivePermissionsUsed)): ?>
                     <table class="table sortable-table">
