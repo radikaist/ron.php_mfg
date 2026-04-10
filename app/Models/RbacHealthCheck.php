@@ -551,7 +551,7 @@ class RbacHealthCheck extends Model
             return 'dashboard.view';
         }
 
-        if ($normalized === 'rbac/health') {
+        if ($normalized === 'rbac/health' || str_starts_with($normalized, 'rbac/health/')) {
             return 'rbac.health.view';
         }
 
@@ -590,6 +590,10 @@ class RbacHealthCheck extends Model
     {
         $code = $this->guessPermissionCode($method, $uri, $module);
 
+        if ($code === 'rbac.health.view') {
+            return 'View RBAC Health';
+        }
+
         if (str_ends_with($code, '.view')) {
             return 'View ' . ucwords(str_replace('_', ' ', $module));
         }
@@ -611,6 +615,10 @@ class RbacHealthCheck extends Model
 
     private function humanizePermissionName(string $permission): string
     {
+        if ($permission === 'rbac.health.view') {
+            return 'View RBAC Health';
+        }
+
         $parts = explode('.', $permission);
         $action = $parts[1] ?? 'view';
         $module = $parts[0] ?? 'general';
