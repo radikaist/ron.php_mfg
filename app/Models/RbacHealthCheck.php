@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Core\Database;
 use Core\Model;
+use PDO;
+use Throwable;
 
 class RbacHealthCheck extends Model
 {
@@ -77,6 +80,7 @@ class RbacHealthCheck extends Model
                     'module' => $module,
                     'suggested_code' => $suggestedCode,
                     'suggested_name' => $this->guessPermissionName($method, $uri, $module),
+                    'description' => 'Generated from route audit.',
                 ];
             }
         }
@@ -191,9 +195,7 @@ class RbacHealthCheck extends Model
         $results = [];
 
         foreach ($mappedRoutes as $item) {
-            $hasPermissionCheck = !empty($item['actual_permissions']);
-
-            if (!$hasPermissionCheck) {
+            if (empty($item['actual_permissions'])) {
                 $results[] = [
                     'method' => $item['method'],
                     'uri' => $item['uri'],
@@ -237,17 +239,23 @@ class RbacHealthCheck extends Model
         $mappedRoutes = $this->mappedControllerRoutes();
         $registeredCodes = $this->registeredPermissionCodes();
         $results = [];
+        $seen = [];
 
         foreach ($mappedRoutes as $item) {
             foreach ($item['actual_permissions'] as $permission) {
-                if (!in_array($permission, $registeredCodes, true)) {
+                $key = $item['controller'] . '|' . $item['action'] . '|' . $permission;
+
+                if (!in_array($permission, $registeredCodes, true) && !isset($seen[$key])) {
                     $results[] = [
                         'method' => $item['method'],
                         'uri' => $item['uri'],
                         'controller' => $item['controller'],
                         'action' => $item['action'],
                         'permission' => $permission,
+                        'module' => explode('.', $permission)[0] ?? 'general',
+                        'name' => $this->humanizePermissionName($permission),
                     ];
+                    $seen[$key] = true;
                 }
             }
         }
@@ -279,6 +287,99 @@ class RbacHealthCheck extends Model
         return array_values(array_filter($permissions, function (array $permission) use ($usedPermissions): bool {
             return !in_array($permission['code'], $usedPermissions, true);
         }));
+    }
+
+    public function autoGenerateFromRoutes(): array
+    {
+        $db = Database::connect();
+        $rows = $this->routesWithoutPermission();
+        $created = 0;
+        $skipped = 0;
+
+        try {
+            $db->beginTransaction();
+
+            foreach ($rows as $row) {
+                if ($this->insertPermissionIfNotExists(
+                    $row['suggested_name'],
+                    $row['suggested_code'],
+                    $row['module'],
+                    $row['description']
+                )) {
+                    $created++;
+                } else {
+                    $skipped++;
+                }
+            }
+
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db instanceof PDO && $db->inTransaction()) {
+                $db->rollBack();
+            }
+        }
+
+        return ['created' => $created, 'skipped' => $skipped];
+    }
+
+    public function autoGenerateFromControllerUsage(): array
+    {
+        $db = Database::connect();
+        $rows = $this->controllerPermissionNotRegistered();
+        $created = 0;
+        $skipped = 0;
+
+        try {
+            $db->beginTransaction();
+
+            foreach ($rows as $row) {
+                if ($this->insertPermissionIfNotExists(
+                    $row['name'],
+                    $row['permission'],
+                    $row['module'],
+                    'Generated from controller permission usage audit.'
+                )) {
+                    $created++;
+                } else {
+                    $skipped++;
+                }
+            }
+
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db instanceof PDO && $db->inTransaction()) {
+                $db->rollBack();
+            }
+        }
+
+        return ['created' => $created, 'skipped' => $skipped];
+    }
+
+    private function insertPermissionIfNotExists(string $name, string $code, string $module, string $description): bool
+    {
+        $stmt = $this->db->prepare("
+            SELECT id
+            FROM permissions
+            WHERE code = :code
+            LIMIT 1
+        ");
+        $stmt->execute(['code' => $code]);
+
+        if ($stmt->fetch()) {
+            return false;
+        }
+
+        $insert = $this->db->prepare("
+            INSERT INTO permissions (name, code, module, description, is_active)
+            VALUES (:name, :code, :module, :description, 1)
+        ");
+
+        return $insert->execute([
+            'name' => $name,
+            'code' => $code,
+            'module' => $module,
+            'description' => $description,
+        ]);
     }
 
     private function mappedControllerRoutes(): array
@@ -436,26 +537,12 @@ class RbacHealthCheck extends Model
         return $module . '.view';
     }
 
-    private function guessPermissionName(string $method, string $uri, string $module): string
+    private function humanizePermissionName(string $permission): string
     {
-        $code = $this->guessPermissionCode($method, $uri, $module);
+        $parts = explode('.', $permission);
+        $action = $parts[1] ?? 'view';
+        $module = $parts[0] ?? 'general';
 
-        if (str_ends_with($code, '.view')) {
-            return 'View ' . ucwords(str_replace('_', ' ', $module));
-        }
-
-        if (str_ends_with($code, '.create')) {
-            return 'Create ' . ucwords(str_replace('_', ' ', $module));
-        }
-
-        if (str_ends_with($code, '.edit')) {
-            return 'Edit ' . ucwords(str_replace('_', ' ', $module));
-        }
-
-        if (str_ends_with($code, '.delete')) {
-            return 'Delete ' . ucwords(str_replace('_', ' ', $module));
-        }
-
-        return ucwords(str_replace('_', ' ', $module));
+        return ucfirst($action) . ' ' . ucwords(str_replace('_', ' ', $module));
     }
 }

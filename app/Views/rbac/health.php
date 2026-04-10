@@ -1,3 +1,23 @@
+<div class="toolbar" style="margin-bottom:22px;">
+    <div class="muted">
+        Halaman ini membantu audit dan otomatisasi sebagian masalah RBAC.
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <form action="<?= e(base_url('rbac/health/auto-generate-routes')) ?>" method="POST" data-confirm="Generate semua permission yang hilang dari route audit?">
+            <?= csrf_field() ?>
+            <button type="submit" class="btn btn-success">Auto Generate from Routes</button>
+        </form>
+
+        <form action="<?= e(base_url('rbac/health/auto-generate-controller-permissions')) ?>" method="POST" data-confirm="Generate semua permission yang dipakai di controller tapi belum terdaftar?">
+            <?= csrf_field() ?>
+            <button type="submit" class="btn btn-pink">Auto Generate from Controller Usage</button>
+        </form>
+
+        <a href="<?= e(base_url('rbac/health/export-csv')) ?>" class="btn-outline">Export CSV</a>
+    </div>
+</div>
+
 <div class="grid">
     <div class="col-3">
         <div class="small-box bg-sky">

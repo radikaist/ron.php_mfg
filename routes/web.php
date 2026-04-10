@@ -47,4 +47,7 @@ return [
     ['POST', '/permissions/update', [PermissionController::class, 'update']],
 
     ['GET', '/rbac/health', [RbacHealthController::class, 'index']],
+    ['POST', '/rbac/health/auto-generate-routes', [RbacHealthController::class, 'autoGenerateRoutes']],
+    ['POST', '/rbac/health/auto-generate-controller-permissions', [RbacHealthController::class, 'autoGenerateControllerPermissions']],
+    ['GET', '/rbac/health/export-csv', [RbacHealthController::class, 'exportCsv']],
 ];
