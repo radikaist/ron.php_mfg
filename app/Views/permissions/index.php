@@ -16,7 +16,7 @@ $totalPages = (int) ($pagination['total_pages'] ?? 1);
 $search = (string) ($pagination['search'] ?? '');
 
 function permissions_page_url(int $page, int $perPage, string $search): string {
-    return base_url('permissions?page=' . $page . '&per_page=' . $perPage . '&search=' . urlencode($search));
+    return base_url('permissions?page=' . $page . '&per_page=' . $perPage . '&search=' . urlencode($search)) . '#permissions-table-section';
 }
 ?>
 
@@ -57,11 +57,11 @@ function permissions_page_url(int $page, int $perPage, string $search): string {
     </a>
 </div>
 
-<div class="card">
+<div class="card" id="permissions-table-section">
     <div class="card-header">Daftar Permission</div>
     <div class="card-body">
         <div class="toolbar">
-            <form method="GET" action="<?= e(base_url('permissions')) ?>" style="display:flex; gap:10px; flex-wrap:wrap; width:100%;">
+            <form method="GET" action="<?= e(base_url('permissions')) ?>#permissions-table-section" style="display:flex; gap:10px; flex-wrap:wrap; width:100%;">
                 <div class="search-box">
                     <input
                         type="text"
@@ -84,7 +84,7 @@ function permissions_page_url(int $page, int $perPage, string $search): string {
                 <button type="submit" class="btn btn-primary">Cari</button>
 
                 <?php if ($search !== ''): ?>
-                    <a href="<?= e(base_url('permissions')) ?>" class="btn-outline">Reset</a>
+                    <a href="<?= e(base_url('permissions')) ?>#permissions-table-section" class="btn-outline">Reset</a>
                 <?php endif; ?>
             </form>
         </div>

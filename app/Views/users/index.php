@@ -17,7 +17,7 @@ $totalPages = (int) ($pagination['total_pages'] ?? 1);
 $search = (string) ($pagination['search'] ?? '');
 
 function users_page_url(int $page, int $perPage, string $search): string {
-    return base_url('users?page=' . $page . '&per_page=' . $perPage . '&search=' . urlencode($search));
+    return base_url('users?page=' . $page . '&per_page=' . $perPage . '&search=' . urlencode($search)) . '#users-table-section';
 }
 ?>
 
@@ -58,11 +58,11 @@ function users_page_url(int $page, int $perPage, string $search): string {
     </a>
 </div>
 
-<div class="card">
+<div class="card" id="users-table-section">
     <div class="card-header">Daftar User</div>
     <div class="card-body">
         <div class="toolbar">
-            <form method="GET" action="<?= e(base_url('users')) ?>" style="display:flex; gap:10px; flex-wrap:wrap; width:100%;">
+            <form method="GET" action="<?= e(base_url('users')) ?>#users-table-section" style="display:flex; gap:10px; flex-wrap:wrap; width:100%;">
                 <div class="search-box">
                     <input
                         type="text"
@@ -85,7 +85,7 @@ function users_page_url(int $page, int $perPage, string $search): string {
                 <button type="submit" class="btn btn-primary">Cari</button>
 
                 <?php if ($search !== ''): ?>
-                    <a href="<?= e(base_url('users')) ?>" class="btn-outline">Reset</a>
+                    <a href="<?= e(base_url('users')) ?>#users-table-section" class="btn-outline">Reset</a>
                 <?php endif; ?>
             </form>
         </div>
