@@ -47,10 +47,26 @@ class App
 
         [$controllerName, $method] = $action;
 
-        $class = 'App\\Controllers\\' . $controllerName;
+        $class = $controllerName;
 
         if (!class_exists($class)) {
-            require_once APP_PATH . '/Controllers/' . $controllerName . '.php';
+            $relativeClass = str_replace('App\\Controllers\\', '', $class);
+            $relativeClass = str_replace('\\', '/', $relativeClass);
+            $file = APP_PATH . '/Controllers/' . $relativeClass . '.php';
+
+            if (!file_exists($file)) {
+                http_response_code(500);
+                echo 'Controller file not found: ' . e($file);
+                exit;
+            }
+
+            require_once $file;
+        }
+
+        if (!class_exists($class)) {
+            http_response_code(500);
+            echo 'Controller class not found: ' . e($class);
+            exit;
         }
 
         $controller = new $class();
