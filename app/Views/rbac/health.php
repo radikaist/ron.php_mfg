@@ -1,5 +1,5 @@
 <div class="grid">
-    <div class="col-4">
+    <div class="col-3">
         <div class="small-box bg-sky">
             <div class="label">Total Issues</div>
             <div class="value"><?= e((string) ($summary['total_issues'] ?? 0)) ?></div>
@@ -8,7 +8,7 @@
         </div>
     </div>
 
-    <div class="col-4">
+    <div class="col-3">
         <div class="small-box bg-orange">
             <div class="label">Route Without Permission</div>
             <div class="value"><?= e((string) ($summary['routes_without_permission'] ?? 0)) ?></div>
@@ -17,12 +17,21 @@
         </div>
     </div>
 
-    <div class="col-4">
+    <div class="col-3">
         <div class="small-box bg-pink">
             <div class="label">Permission Without Route</div>
             <div class="value"><?= e((string) ($summary['permissions_without_route'] ?? 0)) ?></div>
             <div class="desc">Permission yang tidak punya route yang cocok.</div>
             <div class="mini">Audit Permission</div>
+        </div>
+    </div>
+
+    <div class="col-3">
+        <div class="small-box bg-green">
+            <div class="label">Unprotected Actions</div>
+            <div class="value"><?= e((string) ($summary['controller_actions_without_permission_check'] ?? 0)) ?></div>
+            <div class="desc">Controller action yang belum mendeteksi permission check.</div>
+            <div class="mini">Controller Audit</div>
         </div>
     </div>
 </div>
@@ -130,10 +139,44 @@
 
 <div style="height:22px;"></div>
 
+<div class="card">
+    <div class="card-header">3. Controller Action Tanpa Permission Check</div>
+    <div class="card-body">
+        <?php if (!empty($controllerActionsWithoutPermissionCheck)): ?>
+            <table class="table sortable-table">
+                <thead>
+                    <tr>
+                        <th width="100">Method</th>
+                        <th>URI</th>
+                        <th>Controller</th>
+                        <th>Action</th>
+                        <th>Catatan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($controllerActionsWithoutPermissionCheck as $row): ?>
+                        <tr>
+                            <td><span class="badge badge-sky"><?= e($row['method']) ?></span></td>
+                            <td><?= e($row['uri']) ?></td>
+                            <td><?= e($row['controller']) ?></td>
+                            <td><?= e($row['action']) ?></td>
+                            <td><?= e($row['note']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div class="muted">Semua controller action yang ter-audit sudah terdeteksi memiliki permission check.</div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div style="height:22px;"></div>
+
 <div class="grid">
     <div class="col-6">
         <div class="card">
-            <div class="card-header">3. Role Tanpa Permission</div>
+            <div class="card-header">4. Role Tanpa Permission</div>
             <div class="card-body">
                 <?php if (!empty($rolesWithoutPermission)): ?>
                     <table class="table sortable-table">
@@ -171,7 +214,7 @@
 
     <div class="col-6">
         <div class="card">
-            <div class="card-header">4. User Tanpa Role</div>
+            <div class="card-header">5. User Tanpa Role</div>
             <div class="card-body">
                 <?php if (!empty($usersWithoutRole)): ?>
                     <table class="table sortable-table">
@@ -213,7 +256,7 @@
 <div class="grid">
     <div class="col-6">
         <div class="card">
-            <div class="card-header">5. Role Nonaktif Tapi Masih Dipakai</div>
+            <div class="card-header">6. Role Nonaktif Tapi Masih Dipakai</div>
             <div class="card-body">
                 <?php if (!empty($inactiveRolesUsed)): ?>
                     <table class="table sortable-table">
@@ -245,7 +288,7 @@
 
     <div class="col-6">
         <div class="card">
-            <div class="card-header">6. Permission Nonaktif Tapi Masih Dipakai</div>
+            <div class="card-header">7. Permission Nonaktif Tapi Masih Dipakai</div>
             <div class="card-body">
                 <?php if (!empty($inactivePermissionsUsed)): ?>
                     <table class="table sortable-table">

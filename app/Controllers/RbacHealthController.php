@@ -36,6 +36,7 @@ class RbacHealthController extends Controller
             'usersWithoutRole' => $health->usersWithoutRole(),
             'inactiveRolesUsed' => $health->inactiveRolesStillAssigned(),
             'inactivePermissionsUsed' => $health->inactivePermissionsStillAssigned(),
+            'controllerActionsWithoutPermissionCheck' => $health->controllerActionsWithoutPermissionCheck(),
         ]);
     }
 }

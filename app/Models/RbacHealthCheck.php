@@ -16,6 +16,7 @@ class RbacHealthCheck extends Model
         $usersWithoutRole = count($this->usersWithoutRole());
         $inactiveRolesUsed = count($this->inactiveRolesStillAssigned());
         $inactivePermissionsUsed = count($this->inactivePermissionsStillAssigned());
+        $unprotectedControllerActions = count($this->controllerActionsWithoutPermissionCheck());
 
         return [
             'routes_without_permission' => $routesWithoutPermission,
@@ -24,12 +25,14 @@ class RbacHealthCheck extends Model
             'users_without_role' => $usersWithoutRole,
             'inactive_roles_used' => $inactiveRolesUsed,
             'inactive_permissions_used' => $inactivePermissionsUsed,
+            'controller_actions_without_permission_check' => $unprotectedControllerActions,
             'total_issues' => $routesWithoutPermission
                 + $permissionsWithoutRoute
                 + $rolesWithoutPermission
                 + $usersWithoutRole
                 + $inactiveRolesUsed
-                + $inactivePermissionsUsed,
+                + $inactivePermissionsUsed
+                + $unprotectedControllerActions,
         ];
     }
 
@@ -41,12 +44,7 @@ class RbacHealthCheck extends Model
         $permissions = $permissionModel->all();
         $permissionCodes = array_map(static fn(array $item): string => (string) $item['code'], $permissions);
 
-        $ignoredRoutes = [
-            'GET /',
-            'GET /login',
-            'POST /login',
-            'POST /logout',
-        ];
+        $ignoredRoutes = $this->ignoredRoutes();
 
         $results = [];
 
@@ -54,7 +52,6 @@ class RbacHealthCheck extends Model
             [$method, $uri] = $route;
 
             $routeKey = strtoupper($method) . ' ' . $uri;
-
             if (in_array($routeKey, $ignoredRoutes, true)) {
                 continue;
             }
@@ -90,8 +87,13 @@ class RbacHealthCheck extends Model
         foreach ($routes as $route) {
             [$method, $uri] = $route;
 
+            $routeKey = strtoupper($method) . ' ' . $uri;
+            if (in_array($routeKey, $this->ignoredRoutes(), true)) {
+                continue;
+            }
+
             $normalized = trim($uri, '/');
-            if ($normalized === '' || $normalized === 'login') {
+            if ($normalized === '') {
                 continue;
             }
 
@@ -178,6 +180,94 @@ class RbacHealthCheck extends Model
         return $stmt->fetchAll();
     }
 
+    public function controllerActionsWithoutPermissionCheck(): array
+    {
+        $routes = require ROUTES_PATH . '/web.php';
+        $ignoredRoutes = $this->ignoredRoutes();
+        $results = [];
+
+        foreach ($routes as $route) {
+            [$method, $uri, $action] = $route;
+
+            $routeKey = strtoupper($method) . ' ' . $uri;
+            if (in_array($routeKey, $ignoredRoutes, true)) {
+                continue;
+            }
+
+            if (!is_array($action) || count($action) !== 2) {
+                continue;
+            }
+
+            [$controllerClass, $controllerMethod] = $action;
+
+            if (!is_string($controllerClass) || !is_string($controllerMethod)) {
+                continue;
+            }
+
+            $controllerShortName = str_replace('App\\Controllers\\', '', $controllerClass);
+            $controllerPath = APP_PATH . '/Controllers/' . str_replace('\\', '/', $controllerShortName) . '.php';
+
+            if (!file_exists($controllerPath)) {
+                continue;
+            }
+
+            $content = file_get_contents($controllerPath);
+            if ($content === false) {
+                continue;
+            }
+
+            $methodBody = $this->extractMethodBody($content, $controllerMethod);
+
+            if ($methodBody === null) {
+                continue;
+            }
+
+            $hasPermissionCheck =
+                str_contains($methodBody, 'Auth::can(') ||
+                str_contains($methodBody, "can('") ||
+                str_contains($methodBody, 'can("');
+
+            if (!$hasPermissionCheck) {
+                $results[] = [
+                    'method' => strtoupper($method),
+                    'uri' => $uri,
+                    'controller' => $controllerShortName,
+                    'action' => $controllerMethod,
+                    'note' => 'Controller method kemungkinan belum melakukan permission check.',
+                ];
+            }
+        }
+
+        return $results;
+    }
+
+    private function extractMethodBody(string $content, string $methodName): ?string
+    {
+        $pattern = '/function\s+' . preg_quote($methodName, '/') . '\s*\([^)]*\)\s*:\s*void\s*\{([\s\S]*?)\n\s*\}/';
+
+        if (preg_match($pattern, $content, $matches)) {
+            return $matches[1] ?? null;
+        }
+
+        $patternNoReturnType = '/function\s+' . preg_quote($methodName, '/') . '\s*\([^)]*\)\s*\{([\s\S]*?)\n\s*\}/';
+
+        if (preg_match($patternNoReturnType, $content, $matches)) {
+            return $matches[1] ?? null;
+        }
+
+        return null;
+    }
+
+    private function ignoredRoutes(): array
+    {
+        return [
+            'GET /',
+            'GET /login',
+            'POST /login',
+            'POST /logout',
+        ];
+    }
+
     private function guessPermissionCode(string $method, string $uri, string $module): string
     {
         $method = strtoupper($method);
@@ -185,6 +275,10 @@ class RbacHealthCheck extends Model
 
         if ($normalized === 'dashboard') {
             return 'dashboard.view';
+        }
+
+        if ($normalized === 'rbac/health') {
+            return 'rbac.health.view';
         }
 
         if (str_ends_with($normalized, '/create')) {
