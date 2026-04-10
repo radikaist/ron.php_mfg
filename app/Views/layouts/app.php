@@ -902,20 +902,6 @@ $toastError = flash_get('error');
                     });
                 });
             });
-
-            if (window.location.hash) {
-                window.addEventListener('load', function () {
-                    const target = document.querySelector(window.location.hash);
-                    if (target) {
-                        setTimeout(function () {
-                            target.scrollIntoView({
-                                behavior: 'smooth',
-                                block: 'start'
-                            });
-                        }, 80);
-                    }
-                });
-            }
         })();
     </script>
 </body>
