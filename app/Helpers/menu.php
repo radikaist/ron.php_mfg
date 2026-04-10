@@ -36,7 +36,7 @@ function sidebar_menu(): array
         [
             'title' => 'RBAC Health',
             'url' => base_url('rbac/health'),
-            'permission' => 'permissions.view',
+            'permission' => 'rbac.health.view',
             'icon' => '🩺',
             'description' => 'Audit kesehatan RBAC',
         ],

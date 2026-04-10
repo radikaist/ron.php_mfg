@@ -19,7 +19,7 @@ class RbacHealthController extends Controller
             redirect('login');
         }
 
-        if (!Auth::can('permissions.view')) {
+        if (!Auth::can('rbac.health.view')) {
             http_response_code(403);
             $this->view('errors/403', ['title' => '403 Forbidden']);
             return;
