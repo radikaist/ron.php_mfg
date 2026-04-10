@@ -20,6 +20,7 @@
                     <th>Email</th>
                     <th>Role</th>
                     <th width="120">Status</th>
+                    <th width="120">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,11 +39,14 @@
                                     <span class="badge badge-orange">Inactive</span>
                                 <?php endif; ?>
                             </td>
+                            <td>
+                                <a href="<?= e(base_url('users/edit?id=' . $row['id'])) ?>" class="badge badge-sky">Edit</a>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="6" class="muted">Belum ada data user.</td>
+                        <td colspan="7" class="muted">Belum ada data user.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>

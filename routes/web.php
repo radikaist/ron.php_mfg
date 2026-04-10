@@ -27,7 +27,18 @@ return [
     ['GET', '/users', [UserController::class, 'index']],
     ['GET', '/users/create', [UserController::class, 'create']],
     ['POST', '/users/store', [UserController::class, 'store']],
+    ['GET', '/users/edit', [UserController::class, 'edit']],
+    ['POST', '/users/update', [UserController::class, 'update']],
 
     ['GET', '/roles', [RoleController::class, 'index']],
+    ['GET', '/roles/create', [RoleController::class, 'create']],
+    ['POST', '/roles/store', [RoleController::class, 'store']],
+    ['GET', '/roles/edit', [RoleController::class, 'edit']],
+    ['POST', '/roles/update', [RoleController::class, 'update']],
+
     ['GET', '/permissions', [PermissionController::class, 'index']],
+    ['GET', '/permissions/create', [PermissionController::class, 'create']],
+    ['POST', '/permissions/store', [PermissionController::class, 'store']],
+    ['GET', '/permissions/edit', [PermissionController::class, 'edit']],
+    ['POST', '/permissions/update', [PermissionController::class, 'update']],
 ];

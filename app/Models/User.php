@@ -12,18 +12,14 @@ class User extends Model
     public function findByUsername(string $username): array|false
     {
         $sql = "
-            SELECT 
-                u.*
+            SELECT u.*
             FROM users u
             WHERE u.username = :username
-              AND u.is_active = 1
             LIMIT 1
         ";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            'username' => $username,
-        ]);
+        $stmt->execute(['username' => $username]);
 
         return $stmt->fetch();
     }
@@ -50,9 +46,7 @@ class User extends Model
         ";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            'id' => $userId,
-        ]);
+        $stmt->execute(['id' => $userId]);
 
         $user = $stmt->fetch();
 
@@ -86,6 +80,31 @@ class User extends Model
         return $this->db->query($sql)->fetchAll();
     }
 
+    public function findById(int $id): array|false
+    {
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM users
+            WHERE id = :id
+            LIMIT 1
+        ");
+        $stmt->execute(['id' => $id]);
+
+        return $stmt->fetch();
+    }
+
+    public function getRoleIds(int $userId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT role_id
+            FROM user_roles
+            WHERE user_id = :user_id
+        ");
+        $stmt->execute(['user_id' => $userId]);
+
+        return array_map('intval', array_column($stmt->fetchAll(), 'role_id'));
+    }
+
     public function create(array $data): int|false
     {
         try {
@@ -106,25 +125,96 @@ class User extends Model
 
             $userId = (int) $this->db->lastInsertId();
 
-            if (!empty($data['role_ids'])) {
-                $roleStmt = $this->db->prepare("
-                    INSERT INTO user_roles (user_id, role_id)
-                    VALUES (:user_id, :role_id)
-                ");
-
-                foreach ($data['role_ids'] as $roleId) {
-                    $roleStmt->execute([
-                        'user_id' => $userId,
-                        'role_id' => (int) $roleId,
-                    ]);
-                }
-            }
+            $this->syncRoles($userId, $data['role_ids'] ?? []);
 
             $this->db->commit();
             return $userId;
         } catch (PDOException $e) {
             $this->db->rollBack();
             return false;
+        }
+    }
+
+    public function update(int $id, array $data): bool
+    {
+        try {
+            $this->db->beginTransaction();
+
+            $fields = "
+                name = :name,
+                username = :username,
+                email = :email,
+                is_active = :is_active
+            ";
+
+            $params = [
+                'id' => $id,
+                'name' => $data['name'],
+                'username' => $data['username'],
+                'email' => $data['email'] ?: null,
+                'is_active' => $data['is_active'],
+            ];
+
+            if (!empty($data['password'])) {
+                $fields .= ", password = :password";
+                $params['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+            }
+
+            $stmt = $this->db->prepare("
+                UPDATE users
+                SET {$fields}
+                WHERE id = :id
+            ");
+
+            $stmt->execute($params);
+
+            $this->syncRoles($id, $data['role_ids'] ?? []);
+
+            $this->db->commit();
+            return true;
+        } catch (PDOException $e) {
+            $this->db->rollBack();
+            return false;
+        }
+    }
+
+    public function usernameExists(string $username, ?int $excludeId = null): bool
+    {
+        $sql = "SELECT id FROM users WHERE username = :username";
+        $params = ['username' => $username];
+
+        if ($excludeId !== null) {
+            $sql .= " AND id != :exclude_id";
+            $params['exclude_id'] = $excludeId;
+        }
+
+        $sql .= " LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return (bool) $stmt->fetch();
+    }
+
+    private function syncRoles(int $userId, array $roleIds): void
+    {
+        $deleteStmt = $this->db->prepare("DELETE FROM user_roles WHERE user_id = :user_id");
+        $deleteStmt->execute(['user_id' => $userId]);
+
+        if (empty($roleIds)) {
+            return;
+        }
+
+        $insertStmt = $this->db->prepare("
+            INSERT INTO user_roles (user_id, role_id)
+            VALUES (:user_id, :role_id)
+        ");
+
+        foreach ($roleIds as $roleId) {
+            $insertStmt->execute([
+                'user_id' => $userId,
+                'role_id' => (int) $roleId,
+            ]);
         }
     }
 }
