@@ -20,7 +20,7 @@
             </div>
 
             <div style="flex:1; min-width:260px;">
-                <div style="font-size:30px; font-weight:800; color:#0f172a; margin-bottom:10px;">
+                <div style="font-size:30px; font-weight:800; color:inherit; margin-bottom:10px;">
                     Halaman tidak ditemukan
                 </div>
                 <div class="muted" style="font-size:15px; line-height:1.8; margin-bottom:18px;">
@@ -49,10 +49,10 @@
                         justify-content:center;
                         padding:12px 18px;
                         border-radius:14px;
-                        background:#fff;
-                        color:#334155;
+                        background:rgba(255,255,255,.7);
+                        color:inherit;
                         font-weight:700;
-                        border:1px solid #dbeafe;
+                        border:1px solid rgba(219,234,254,.7);
                     ">
                         Ke Halaman Login
                     </a>

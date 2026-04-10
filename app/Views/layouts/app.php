@@ -3,16 +3,46 @@ $appName = env('APP_NAME', 'RON MFG');
 $user = auth();
 $menus = sidebar_menu();
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+
+$pageTitle = $title ?? 'Dashboard';
+
+$breadcrumbItems = [];
+$pathSegments = array_values(array_filter(explode('/', trim($currentPath, '/'))));
+
+$breadcrumbItems[] = [
+    'label' => 'Home',
+    'url' => base_url('dashboard'),
+];
+
+if (!empty($pathSegments)) {
+    $buildPath = '';
+    foreach ($pathSegments as $index => $segment) {
+        $buildPath .= '/' . $segment;
+        $label = ucwords(str_replace(['-', '_'], ' ', $segment));
+
+        $breadcrumbItems[] = [
+            'label' => $label,
+            'url' => base_url(ltrim($buildPath, '/')),
+            'active' => $index === array_key_last($pathSegments),
+        ];
+    }
+} else {
+    $breadcrumbItems[] = [
+        'label' => 'Dashboard',
+        'url' => base_url('dashboard'),
+        'active' => true,
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($title ?? $appName) ?></title>
+    <title><?= e($pageTitle) ?></title>
     <style>
         :root {
-            --sidebar-width: 280px;
+            --sidebar-width: 300px;
             --topbar-height: 72px;
             --footer-height: 58px;
 
@@ -40,6 +70,37 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             --success-text: #166534;
             --danger-bg: #fee2e2;
             --danger-text: #b91c1c;
+
+            --topbar-bg: rgba(255,255,255,.82);
+            --footer-bg: rgba(255,255,255,.55);
+            --menu-item-bg: rgba(255,255,255,.55);
+            --menu-item-hover: rgba(255,255,255,.88);
+            --sidebar-card-bg: rgba(255,255,255,.76);
+            --table-head-bg: rgba(239,246,255,.72);
+            --welcome-bg: linear-gradient(135deg, rgba(59,130,246,.10), rgba(6,182,212,.08), rgba(34,197,94,.07));
+        }
+
+        body.theme-dark {
+            --sidebar-bg-1: #172033;
+            --sidebar-bg-2: #0f172a;
+            --sidebar-border: rgba(255,255,255,.06);
+
+            --body-bg: linear-gradient(135deg, #0f172a 0%, #111827 45%, #172033 100%);
+            --card-bg: rgba(30,41,59,.78);
+            --card-border: rgba(255,255,255,.06);
+            --card-shadow: 0 20px 45px rgba(0,0,0,.28);
+
+            --text: #e5eefc;
+            --muted: #94a3b8;
+            --line: rgba(255,255,255,.08);
+
+            --topbar-bg: rgba(15,23,42,.82);
+            --footer-bg: rgba(15,23,42,.52);
+            --menu-item-bg: rgba(255,255,255,.04);
+            --menu-item-hover: rgba(255,255,255,.08);
+            --sidebar-card-bg: rgba(255,255,255,.04);
+            --table-head-bg: rgba(255,255,255,.05);
+            --welcome-bg: linear-gradient(135deg, rgba(59,130,246,.18), rgba(6,182,212,.10), rgba(34,197,94,.10));
         }
 
         * {
@@ -52,6 +113,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             font-family: "Segoe UI", Tahoma, Arial, sans-serif;
             color: var(--text);
             background: var(--body-bg);
+            transition: background .25s ease, color .25s ease;
         }
 
         body {
@@ -60,6 +122,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
         a {
             text-decoration: none;
+            color: inherit;
         }
 
         .layout {
@@ -72,9 +135,9 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             left: 0;
             right: 0;
             height: var(--topbar-height);
-            background: rgba(255,255,255,.82);
+            background: var(--topbar-bg);
             backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(219,234,254,.8);
+            border-bottom: 1px solid var(--line);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -89,24 +152,31 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             gap: 14px;
         }
 
-        .sidebar-toggle {
+        .sidebar-toggle,
+        .theme-toggle {
             border: none;
             background: linear-gradient(90deg, #3b82f6, #06b6d4);
             color: #fff;
-            width: 42px;
+            min-width: 42px;
             height: 42px;
             border-radius: 12px;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 18px;
             line-height: 1;
             font-weight: 700;
             box-shadow: 0 12px 20px rgba(59,130,246,.18);
+            padding: 0 12px;
+        }
+
+        .theme-toggle {
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+            font-size: 14px;
         }
 
         .brand {
             font-size: 28px;
             font-weight: 800;
-            color: #1e293b;
+            color: var(--text);
             letter-spacing: .2px;
         }
 
@@ -121,16 +191,16 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         .topbar-right {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
         }
 
         .topbar-user {
             font-size: 14px;
-            color: #334155;
+            color: var(--text);
             padding: 10px 14px;
             border-radius: 999px;
-            background: rgba(255,255,255,.7);
-            border: 1px solid #dbeafe;
+            background: rgba(255,255,255,.08);
+            border: 1px solid var(--line);
         }
 
         .logout-form {
@@ -167,12 +237,12 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             padding: 20px 16px;
             overflow-y: auto;
             z-index: 1000;
-            transition: transform .28s ease, width .28s ease;
+            transition: transform .28s ease, width .28s ease, background .25s ease;
         }
 
         .sidebar-card {
-            background: rgba(255,255,255,.76);
-            border: 1px solid rgba(255,255,255,.8);
+            background: var(--sidebar-card-bg);
+            border: 1px solid var(--card-border);
             border-radius: 24px;
             box-shadow: 0 18px 36px rgba(59,130,246,.07);
             padding: 18px;
@@ -182,13 +252,13 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         .sidebar-user-name {
             font-weight: 800;
             font-size: 18px;
-            color: #0f172a;
+            color: var(--text);
             margin-bottom: 6px;
         }
 
         .sidebar-user-role {
             font-size: 13px;
-            color: #475569;
+            color: var(--muted);
             line-height: 1.6;
         }
 
@@ -198,7 +268,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             text-transform: uppercase;
             letter-spacing: .8px;
             font-weight: 800;
-            color: #64748b;
+            color: var(--muted);
         }
 
         .sidebar-menu {
@@ -208,25 +278,26 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         }
 
         .sidebar-menu li {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .sidebar-menu a {
             display: flex;
             align-items: center;
+            gap: 12px;
             padding: 14px 16px;
-            color: #334155;
-            border-radius: 16px;
+            color: var(--text);
+            border-radius: 18px;
             transition: .2s ease;
             font-size: 14px;
             font-weight: 600;
-            background: rgba(255,255,255,.55);
+            background: var(--menu-item-bg);
             border: 1px solid transparent;
         }
 
         .sidebar-menu a:hover {
-            background: rgba(255,255,255,.88);
-            border-color: #dbeafe;
+            background: var(--menu-item-hover);
+            border-color: var(--line);
             transform: translateX(2px);
         }
 
@@ -234,6 +305,37 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             background: linear-gradient(90deg, #3b82f6, #06b6d4);
             color: #fff;
             box-shadow: 0 14px 24px rgba(59,130,246,.18);
+        }
+
+        .menu-icon {
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(255,255,255,.22);
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .menu-content {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .menu-title {
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .menu-desc {
+            font-size: 11px;
+            opacity: .82;
+            line-height: 1.4;
+            margin-top: 2px;
         }
 
         .main {
@@ -250,7 +352,30 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         }
 
         .content-header {
-            padding: 28px 28px 14px;
+            padding: 24px 28px 12px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .breadcrumb a {
+            color: var(--muted);
+        }
+
+        .breadcrumb-sep {
+            opacity: .5;
+        }
+
+        .breadcrumb-current {
+            color: var(--text);
+            font-weight: 700;
         }
 
         .content-title {
@@ -258,7 +383,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             font-size: 40px;
             line-height: 1.12;
             font-weight: 800;
-            color: #0f172a;
+            color: var(--text);
         }
 
         .content-subtitle {
@@ -277,7 +402,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             margin-bottom: 18px;
             font-size: 14px;
             font-weight: 600;
-            border: 1px solid rgba(255,255,255,.7);
+            border: 1px solid var(--card-border);
             box-shadow: 0 10px 24px rgba(0,0,0,.04);
         }
 
@@ -289,6 +414,59 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         .alert-danger {
             background: var(--danger-bg);
             color: var(--danger-text);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .quick-action {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: .2s ease;
+        }
+
+        .quick-action:hover {
+            transform: translateY(-2px);
+        }
+
+        .quick-action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .qa-blue { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
+        .qa-green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .qa-orange { background: linear-gradient(135deg, #f59e0b, #f97316); }
+        .qa-pink { background: linear-gradient(135deg, #ec4899, #8b5cf6); }
+
+        .quick-action-title {
+            font-weight: 800;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .quick-action-desc {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 4px;
+            line-height: 1.5;
         }
 
         .grid {
@@ -313,7 +491,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             padding: 22px 22px 20px;
             color: #fff;
             box-shadow: var(--card-shadow);
-            min-height: 148px;
+            min-height: 160px;
         }
 
         .small-box::after {
@@ -332,7 +510,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             z-index: 1;
             font-size: 14px;
             opacity: .95;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .small-box .value {
@@ -349,8 +527,20 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             z-index: 1;
             margin-top: 12px;
             font-size: 13px;
-            line-height: 1.5;
-            opacity: .96;
+            line-height: 1.6;
+            opacity: .97;
+        }
+
+        .small-box .mini {
+            position: relative;
+            z-index: 1;
+            margin-top: 8px;
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(255,255,255,.16);
+            padding: 7px 10px;
+            border-radius: 999px;
         }
 
         .bg-sky {
@@ -366,7 +556,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         }
 
         .bg-pink {
-            background: linear-gradient(135deg, #f472b6, #ec4899);
+            background: linear-gradient(135deg, #f472b6, #8b5cf6);
         }
 
         .card {
@@ -383,8 +573,8 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             border-bottom: 1px solid var(--line);
             font-weight: 800;
             font-size: 18px;
-            color: #0f172a;
-            background: rgba(255,255,255,.4);
+            color: var(--text);
+            background: rgba(255,255,255,.04);
         }
 
         .card-body {
@@ -403,11 +593,12 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             text-align: left;
             vertical-align: top;
             font-size: 14px;
+            color: var(--text);
         }
 
         .table th {
-            background: rgba(239,246,255,.72);
-            color: #0f172a;
+            background: var(--table-head-bg);
+            color: var(--text);
             font-weight: 800;
         }
 
@@ -447,13 +638,33 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             color: #be185d;
         }
 
+        body.theme-dark .badge-sky {
+            background: rgba(59,130,246,.18);
+            color: #bfdbfe;
+        }
+
+        body.theme-dark .badge-green {
+            background: rgba(34,197,94,.18);
+            color: #bbf7d0;
+        }
+
+        body.theme-dark .badge-orange {
+            background: rgba(245,158,11,.18);
+            color: #fed7aa;
+        }
+
+        body.theme-dark .badge-pink {
+            background: rgba(236,72,153,.18);
+            color: #fbcfe8;
+        }
+
         .muted {
             color: var(--muted);
         }
 
         .welcome-panel {
-            background: linear-gradient(135deg, rgba(59,130,246,.10), rgba(6,182,212,.08), rgba(34,197,94,.07));
-            border: 1px solid rgba(255,255,255,.8);
+            background: var(--welcome-bg);
+            border: 1px solid var(--card-border);
             border-radius: 24px;
             box-shadow: var(--card-shadow);
             padding: 24px;
@@ -464,11 +675,11 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             font-size: 24px;
             font-weight: 800;
             margin-bottom: 8px;
-            color: #0f172a;
+            color: var(--text);
         }
 
         .welcome-desc {
-            color: #475569;
+            color: var(--muted);
             line-height: 1.7;
             font-size: 15px;
             max-width: 900px;
@@ -482,15 +693,15 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             justify-content: space-between;
             gap: 12px;
             padding: 16px 28px;
-            border-top: 1px solid rgba(219,234,254,.8);
-            background: rgba(255,255,255,.55);
+            border-top: 1px solid var(--line);
+            background: var(--footer-bg);
             backdrop-filter: blur(10px);
-            color: #475569;
+            color: var(--muted);
             font-size: 13px;
         }
 
         .footer strong {
-            color: #0f172a;
+            color: var(--text);
         }
 
         body.sidebar-collapsed .sidebar {
@@ -502,6 +713,10 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         }
 
         @media (max-width: 1200px) {
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
             .col-3, .col-4, .col-5, .col-6, .col-7, .col-8 {
                 grid-column: span 12;
             }
@@ -542,6 +757,10 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
                 display: none;
             }
 
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+
             .content-header,
             .content-body,
             .footer {
@@ -565,6 +784,8 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             </div>
 
             <div class="topbar-right">
+                <button type="button" class="theme-toggle" id="themeToggle">Theme</button>
+
                 <?php if ($user): ?>
                     <div class="topbar-user">
                         Login sebagai <strong><?= e($user['name'] ?? '-') ?></strong>
@@ -596,7 +817,11 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
                     ?>
                     <li>
                         <a href="<?= e($menu['url']) ?>" class="<?= $isActive ? 'active' : '' ?>">
-                            <?= e($menu['title']) ?>
+                            <span class="menu-icon"><?= e($menu['icon'] ?? '•') ?></span>
+                            <span class="menu-content">
+                                <span class="menu-title"><?= e($menu['title']) ?></span>
+                                <span class="menu-desc"><?= e($menu['description'] ?? '') ?></span>
+                            </span>
                         </a>
                     </li>
                 <?php endforeach; ?>
@@ -606,7 +831,21 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         <main class="main">
             <div class="main-inner">
                 <div class="content-header">
-                    <h1 class="content-title"><?= e($title ?? 'Dashboard') ?></h1>
+                    <div class="breadcrumb">
+                        <?php foreach ($breadcrumbItems as $index => $item): ?>
+                            <?php if ($index > 0): ?>
+                                <span class="breadcrumb-sep">/</span>
+                            <?php endif; ?>
+
+                            <?php if (!empty($item['active'])): ?>
+                                <span class="breadcrumb-current"><?= e($item['label']) ?></span>
+                            <?php else: ?>
+                                <a href="<?= e($item['url']) ?>"><?= e($item['label']) ?></a>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <h1 class="content-title"><?= e($pageTitle) ?></h1>
                     <div class="content-subtitle">Bright Native PHP MVC Framework with Dynamic RBAC for Manufacturing System</div>
                 </div>
 
@@ -639,6 +878,8 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
             const body = document.body;
             const toggle = document.getElementById('sidebarToggle');
             const overlay = document.getElementById('sidebarOverlay');
+            const themeToggle = document.getElementById('themeToggle');
+            const themeKey = 'ronmfg_theme';
 
             function isMobile() {
                 return window.innerWidth <= 900;
@@ -660,6 +901,24 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
                 if (!isMobile()) {
                     body.classList.remove('sidebar-open');
                 }
+            });
+
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    body.classList.add('theme-dark');
+                } else {
+                    body.classList.remove('theme-dark');
+                }
+            }
+
+            const savedTheme = localStorage.getItem(themeKey) || 'light';
+            applyTheme(savedTheme);
+
+            themeToggle.addEventListener('click', function () {
+                const currentTheme = body.classList.contains('theme-dark') ? 'dark' : 'light';
+                const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                localStorage.setItem(themeKey, nextTheme);
+                applyTheme(nextTheme);
             });
         })();
     </script>
