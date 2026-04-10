@@ -52,6 +52,11 @@ class AuthController extends Controller
 
         Auth::login($user);
 
+        if (!Auth::check()) {
+            flash('error', 'Gagal memuat data otorisasi user.');
+            redirect('login');
+        }
+
         unset($_SESSION['_old']);
         flash('success', 'Login berhasil.');
         redirect('dashboard');

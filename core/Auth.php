@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Core;
 
+use App\Models\User;
+
+require_once APP_PATH . '/Models/User.php';
+
 class Auth
 {
     public static function user(): ?array
@@ -20,11 +24,20 @@ class Auth
     {
         session_regenerate_id(true);
 
+        $userModel = new User();
+        $fullUser = $userModel->findWithRolesAndPermissionsById((int) $user['id']);
+
+        if (!$fullUser) {
+            return;
+        }
+
         $_SESSION['auth'] = [
-            'id' => $user['id'],
-            'name' => $user['name'],
-            'username' => $user['username'],
-            'email' => $user['email'] ?? null,
+            'id' => $fullUser['id'],
+            'name' => $fullUser['name'],
+            'username' => $fullUser['username'],
+            'email' => $fullUser['email'] ?? null,
+            'roles' => $fullUser['roles'] ?? [],
+            'permissions' => $fullUser['permissions'] ?? [],
         ];
     }
 
@@ -37,5 +50,27 @@ class Auth
     public static function id(): int|string|null
     {
         return $_SESSION['auth']['id'] ?? null;
+    }
+
+    public static function hasRole(string $roleCode): bool
+    {
+        $user = self::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return in_array($roleCode, $user['roles'] ?? [], true);
+    }
+
+    public static function can(string $permissionCode): bool
+    {
+        $user = self::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return in_array($permissionCode, $user['permissions'] ?? [], true);
     }
 }

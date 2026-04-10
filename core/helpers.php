@@ -104,3 +104,24 @@ if (!function_exists('e')) {
         return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
     }
 }
+
+if (!function_exists('auth')) {
+    function auth(): ?array
+    {
+        return \Core\Auth::user();
+    }
+}
+
+if (!function_exists('can')) {
+    function can(string $permissionCode): bool
+    {
+        return \Core\Auth::can($permissionCode);
+    }
+}
+
+if (!function_exists('has_role')) {
+    function has_role(string $roleCode): bool
+    {
+        return \Core\Auth::hasRole($roleCode);
+    }
+}
