@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Models\Permission;
+use App\Models\RoutePermissionAudit;
 use Core\Auth;
 use Core\Controller;
 
 require_once APP_PATH . '/Models/Permission.php';
+require_once APP_PATH . '/Models/RoutePermissionAudit.php';
 
 class PermissionController extends Controller
 {
@@ -46,8 +48,19 @@ class PermissionController extends Controller
             return;
         }
 
+        $auditModel = new RoutePermissionAudit();
+
+        $suggested = [
+            'name' => $_GET['suggest_name'] ?? '',
+            'code' => $_GET['suggest_code'] ?? '',
+            'module' => $_GET['suggest_module'] ?? '',
+            'description' => $_GET['suggest_description'] ?? '',
+        ];
+
         $this->view('permissions/create', [
             'title' => 'Create Permission',
+            'undocumentedRoutes' => $auditModel->getUndocumentedRoutes(),
+            'suggested' => $suggested,
         ]);
     }
 
