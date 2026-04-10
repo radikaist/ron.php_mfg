@@ -14,6 +14,11 @@ $suggestedDescription = $suggested['description'] ?? '';
                         <div class="muted">
                             Ditemukan <strong><?= e((string) count($undocumentedRoutes)) ?></strong> route yang belum memiliki permission terdaftar.
                         </div>
+
+                        <form action="<?= e(base_url('permissions/auto-store-all')) ?>" method="POST" data-confirm="Generate semua permission yang belum terdaftar?">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-success">Generate All Missing Permissions</button>
+                        </form>
                     </div>
 
                     <table class="table sortable-table" id="undocumentedRoutesTable">
@@ -24,7 +29,7 @@ $suggestedDescription = $suggested['description'] ?? '';
                                 <th width="140">Module</th>
                                 <th>Suggested Code</th>
                                 <th>Suggested Name</th>
-                                <th class="no-sort" width="160">Action</th>
+                                <th class="no-sort" width="260">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -36,17 +41,28 @@ $suggestedDescription = $suggested['description'] ?? '';
                                     <td><?= e($route['suggested_code']) ?></td>
                                     <td><?= e($route['suggested_name']) ?></td>
                                     <td>
-                                        <a
-                                            href="<?= e(base_url('permissions/create'
-                                                . '?suggest_name=' . urlencode($route['suggested_name'])
-                                                . '&suggest_code=' . urlencode($route['suggested_code'])
-                                                . '&suggest_module=' . urlencode($route['module'])
-                                                . '&suggest_description=' . urlencode($route['description'])
-                                            )) ?>"
-                                            class="badge badge-green"
-                                        >
-                                            Gunakan Saran
-                                        </a>
+                                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                            <a
+                                                href="<?= e(base_url('permissions/create'
+                                                    . '?suggest_name=' . urlencode($route['suggested_name'])
+                                                    . '&suggest_code=' . urlencode($route['suggested_code'])
+                                                    . '&suggest_module=' . urlencode($route['module'])
+                                                    . '&suggest_description=' . urlencode($route['description'])
+                                                )) ?>"
+                                                class="badge badge-green"
+                                            >
+                                                Gunakan Saran
+                                            </a>
+
+                                            <form action="<?= e(base_url('permissions/auto-store')) ?>" method="POST" data-confirm="Generate permission ini sekarang?">
+                                                <?= csrf_field() ?>
+                                                <input type="hidden" name="name" value="<?= e($route['suggested_name']) ?>">
+                                                <input type="hidden" name="code" value="<?= e($route['suggested_code']) ?>">
+                                                <input type="hidden" name="module" value="<?= e($route['module']) ?>">
+                                                <input type="hidden" name="description" value="<?= e($route['description']) ?>">
+                                                <button type="submit" class="badge badge-pink" style="border:none; cursor:pointer;">Generate Sekarang</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -54,7 +70,7 @@ $suggestedDescription = $suggested['description'] ?? '';
                     </table>
 
                     <div class="form-hint" style="margin-top:12px;">
-                        Klik <strong>Gunakan Saran</strong> untuk mengisi otomatis form permission di bawah.
+                        Gunakan <strong>Generate Sekarang</strong> untuk satu item, atau <strong>Generate All Missing Permissions</strong> untuk semuanya.
                     </div>
                 <?php else: ?>
                     <div class="muted">
@@ -67,7 +83,7 @@ $suggestedDescription = $suggested['description'] ?? '';
 
     <div class="col-12">
         <div class="card">
-            <div class="card-header">Tambah Permission</div>
+            <div class="card-header">Tambah Permission Manual</div>
             <div class="card-body">
                 <form action="<?= e(base_url('permissions/store')) ?>" method="POST" data-confirm="Simpan permission baru?">
                     <?= csrf_field() ?>

@@ -41,6 +41,8 @@ return [
     ['GET', '/permissions', [PermissionController::class, 'index']],
     ['GET', '/permissions/create', [PermissionController::class, 'create']],
     ['POST', '/permissions/store', [PermissionController::class, 'store']],
+    ['POST', '/permissions/auto-store', [PermissionController::class, 'autoStore']],
+    ['POST', '/permissions/auto-store-all', [PermissionController::class, 'autoStoreAll']],
     ['GET', '/permissions/edit', [PermissionController::class, 'edit']],
     ['POST', '/permissions/update', [PermissionController::class, 'update']],
 

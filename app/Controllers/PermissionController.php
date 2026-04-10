@@ -126,6 +126,75 @@ class PermissionController extends Controller
         redirect('permissions');
     }
 
+    public function autoStore(): void
+    {
+        if (!Auth::check()) {
+            flash('error', 'Silakan login terlebih dahulu.');
+            redirect('login');
+        }
+
+        if (!Auth::can('permissions.create')) {
+            http_response_code(403);
+            $this->view('errors/403', ['title' => '403 Forbidden']);
+            return;
+        }
+
+        if (!verify_csrf()) {
+            flash('error', 'Token CSRF tidak valid.');
+            redirect('permissions/create');
+        }
+
+        $name = trim($_POST['name'] ?? '');
+        $code = trim($_POST['code'] ?? '');
+        $module = trim($_POST['module'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+
+        if ($name === '' || $code === '' || $module === '') {
+            flash('error', 'Data auto-generate tidak lengkap.');
+            redirect('permissions/create');
+        }
+
+        $auditModel = new RoutePermissionAudit();
+        $created = $auditModel->generatePermission($name, $code, $module, $description);
+
+        if (!$created) {
+            flash('error', 'Permission gagal dibuat atau sudah ada.');
+            redirect('permissions/create');
+        }
+
+        flash('success', 'Permission berhasil dibuat dari route audit.');
+        redirect('permissions');
+    }
+
+    public function autoStoreAll(): void
+    {
+        if (!Auth::check()) {
+            flash('error', 'Silakan login terlebih dahulu.');
+            redirect('login');
+        }
+
+        if (!Auth::can('permissions.create')) {
+            http_response_code(403);
+            $this->view('errors/403', ['title' => '403 Forbidden']);
+            return;
+        }
+
+        if (!verify_csrf()) {
+            flash('error', 'Token CSRF tidak valid.');
+            redirect('permissions/create');
+        }
+
+        $auditModel = new RoutePermissionAudit();
+        $result = $auditModel->generateAllMissingPermissions();
+
+        flash(
+            'success',
+            'Auto-generate selesai. Created: ' . $result['created'] . ', Skipped: ' . $result['skipped'] . '.'
+        );
+
+        redirect('permissions');
+    }
+
     public function edit(): void
     {
         if (!Auth::check()) {
