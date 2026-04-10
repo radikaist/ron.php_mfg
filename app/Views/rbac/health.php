@@ -9,10 +9,40 @@ $roleNoPermissionPagination = $rolesWithoutPermissionPagination;
 $userNoRolePagination = $usersWithoutRolePagination;
 $inactiveRolePagination = $inactiveRolesUsedPagination;
 $inactivePermissionPagination = $inactivePermissionsUsedPagination;
+$filters = $filters ?? [];
 
 function rbac_health_url(array $overrides, string $anchor): string {
     $params = array_merge($_GET, $overrides);
     return base_url('rbac/health?' . http_build_query($params)) . $anchor;
+}
+
+function render_rbac_filter_form(string $searchKey, string $anchor, string $value, string $pageKey): void {
+    ?>
+    <form method="GET" action="<?= e(base_url('rbac/health')) . $anchor ?>" style="display:flex; gap:10px; flex-wrap:wrap; width:100%; margin-bottom:16px;">
+        <?php foreach ($_GET as $key => $val): ?>
+            <?php if ($key !== $searchKey && $key !== $pageKey): ?>
+                <input type="hidden" name="<?= e((string) $key) ?>" value="<?= e((string) $val) ?>">
+            <?php endif; ?>
+        <?php endforeach; ?>
+
+        <div class="search-box">
+            <input
+                type="text"
+                class="form-control"
+                name="<?= e($searchKey) ?>"
+                value="<?= e($value) ?>"
+                placeholder="Cari pada section ini..."
+            >
+        </div>
+
+        <input type="hidden" name="<?= e($pageKey) ?>" value="1">
+        <button type="submit" class="btn btn-primary">Cari</button>
+
+        <?php if ($value !== ''): ?>
+            <a href="<?= e(rbac_health_url([$searchKey => '', $pageKey => 1], $anchor)) ?>" class="btn-outline">Reset</a>
+        <?php endif; ?>
+    </form>
+    <?php
 }
 
 function render_rbac_pagination(array $pagination, string $pageKey, string $perPageKey, string $anchor): void {
@@ -118,38 +148,10 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
     </div>
 </div>
 
-<div class="grid">
-    <div class="col-4">
-        <div class="small-box bg-green">
-            <div class="label">Roles Without Permission</div>
-            <div class="value"><?= e((string) ($summary['roles_without_permission'] ?? 0)) ?></div>
-            <div class="desc">Role tanpa permission sama sekali.</div>
-            <div class="mini">Role Audit</div>
-        </div>
-    </div>
-
-    <div class="col-4">
-        <div class="small-box bg-orange">
-            <div class="label">Users Without Role</div>
-            <div class="value"><?= e((string) ($summary['users_without_role'] ?? 0)) ?></div>
-            <div class="desc">User belum memiliki role.</div>
-            <div class="mini">User Audit</div>
-        </div>
-    </div>
-
-    <div class="col-4">
-        <div class="small-box bg-pink">
-            <div class="label">Unused Registered Permissions</div>
-            <div class="value"><?= e((string) ($summary['registered_but_unused_permissions'] ?? 0)) ?></div>
-            <div class="desc">Permission terdaftar tetapi belum terdeteksi dipakai di controller.</div>
-            <div class="mini">Usage Audit</div>
-        </div>
-    </div>
-</div>
-
 <div class="card" id="rbac-routes-section">
     <div class="card-header">1. Route Tanpa Permission</div>
     <div class="card-body">
+        <?php render_rbac_filter_form('route_search', '#rbac-routes-section', (string) ($filters['route_search'] ?? ''), 'route_page'); ?>
         <?php if (!empty($routePagination['data'])): ?>
             <table class="table sortable-table">
                 <thead>
@@ -175,7 +177,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             </table>
             <?php render_rbac_pagination($routePagination, 'route_page', 'route_per_page', '#rbac-routes-section'); ?>
         <?php else: ?>
-            <div class="muted">Tidak ada route tanpa permission.</div>
+            <div class="muted">Tidak ada data yang cocok.</div>
         <?php endif; ?>
     </div>
 </div>
@@ -185,6 +187,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
 <div class="card" id="rbac-controller-check-section">
     <div class="card-header">2. Controller Action Tanpa Permission Check</div>
     <div class="card-body">
+        <?php render_rbac_filter_form('controller_check_search', '#rbac-controller-check-section', (string) ($filters['controller_check_search'] ?? ''), 'controller_check_page'); ?>
         <?php if (!empty($controllerCheckPagination['data'])): ?>
             <table class="table sortable-table">
                 <thead>
@@ -210,7 +213,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             </table>
             <?php render_rbac_pagination($controllerCheckPagination, 'controller_check_page', 'controller_check_per_page', '#rbac-controller-check-section'); ?>
         <?php else: ?>
-            <div class="muted">Semua controller action yang ter-audit sudah terdeteksi memiliki permission check.</div>
+            <div class="muted">Tidak ada data yang cocok.</div>
         <?php endif; ?>
     </div>
 </div>
@@ -220,6 +223,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
 <div class="card" id="rbac-mismatch-section">
     <div class="card-header">3. Expected Permission vs Actual Permission di Controller</div>
     <div class="card-body">
+        <?php render_rbac_filter_form('mismatch_search', '#rbac-mismatch-section', (string) ($filters['mismatch_search'] ?? ''), 'mismatch_page'); ?>
         <?php if (!empty($mismatchPagination['data'])): ?>
             <table class="table sortable-table">
                 <thead>
@@ -247,7 +251,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             </table>
             <?php render_rbac_pagination($mismatchPagination, 'mismatch_page', 'mismatch_per_page', '#rbac-mismatch-section'); ?>
         <?php else: ?>
-            <div class="muted">Tidak ditemukan mismatch antara expected permission dan actual permission di controller.</div>
+            <div class="muted">Tidak ada data yang cocok.</div>
         <?php endif; ?>
     </div>
 </div>
@@ -257,6 +261,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
 <div class="card" id="rbac-controller-missing-section">
     <div class="card-header">4. Permission Dipakai di Controller Tapi Belum Terdaftar</div>
     <div class="card-body">
+        <?php render_rbac_filter_form('controller_missing_search', '#rbac-controller-missing-section', (string) ($filters['controller_missing_search'] ?? ''), 'controller_missing_page'); ?>
         <?php if (!empty($controllerMissingPagination['data'])): ?>
             <table class="table sortable-table">
                 <thead>
@@ -282,7 +287,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             </table>
             <?php render_rbac_pagination($controllerMissingPagination, 'controller_missing_page', 'controller_missing_per_page', '#rbac-controller-missing-section'); ?>
         <?php else: ?>
-            <div class="muted">Tidak ada permission yang dipakai controller namun belum terdaftar di database.</div>
+            <div class="muted">Tidak ada data yang cocok.</div>
         <?php endif; ?>
     </div>
 </div>
@@ -292,6 +297,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
 <div class="card" id="rbac-unused-permission-section">
     <div class="card-header">5. Permission Terdaftar Tapi Belum Terdeteksi Dipakai di Controller</div>
     <div class="card-body">
+        <?php render_rbac_filter_form('unused_permission_search', '#rbac-unused-permission-section', (string) ($filters['unused_permission_search'] ?? ''), 'unused_permission_page'); ?>
         <?php if (!empty($unusedPermissionPagination['data'])): ?>
             <table class="table sortable-table">
                 <thead>
@@ -323,7 +329,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             </table>
             <?php render_rbac_pagination($unusedPermissionPagination, 'unused_permission_page', 'unused_permission_per_page', '#rbac-unused-permission-section'); ?>
         <?php else: ?>
-            <div class="muted">Semua permission terdaftar sudah terdeteksi dipakai di controller.</div>
+            <div class="muted">Tidak ada data yang cocok.</div>
         <?php endif; ?>
     </div>
 </div>
@@ -333,6 +339,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
 <div class="card" id="rbac-permission-route-section">
     <div class="card-header">6. Permission Tanpa Route</div>
     <div class="card-body">
+        <?php render_rbac_filter_form('permission_route_search', '#rbac-permission-route-section', (string) ($filters['permission_route_search'] ?? ''), 'permission_route_page'); ?>
         <?php if (!empty($permissionRoutePagination['data'])): ?>
             <table class="table sortable-table">
                 <thead>
@@ -364,7 +371,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             </table>
             <?php render_rbac_pagination($permissionRoutePagination, 'permission_route_page', 'permission_route_per_page', '#rbac-permission-route-section'); ?>
         <?php else: ?>
-            <div class="muted">Tidak ada permission yatim tanpa route.</div>
+            <div class="muted">Tidak ada data yang cocok.</div>
         <?php endif; ?>
     </div>
 </div>
@@ -376,6 +383,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
         <div class="card" id="rbac-role-no-permission-section">
             <div class="card-header">7. Role Tanpa Permission</div>
             <div class="card-body">
+                <?php render_rbac_filter_form('role_no_permission_search', '#rbac-role-no-permission-section', (string) ($filters['role_no_permission_search'] ?? ''), 'role_no_permission_page'); ?>
                 <?php if (!empty($roleNoPermissionPagination['data'])): ?>
                     <table class="table sortable-table">
                         <thead>
@@ -405,7 +413,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                     </table>
                     <?php render_rbac_pagination($roleNoPermissionPagination, 'role_no_permission_page', 'role_no_permission_per_page', '#rbac-role-no-permission-section'); ?>
                 <?php else: ?>
-                    <div class="muted">Tidak ada role tanpa permission.</div>
+                    <div class="muted">Tidak ada data yang cocok.</div>
                 <?php endif; ?>
             </div>
         </div>
@@ -415,6 +423,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
         <div class="card" id="rbac-user-no-role-section">
             <div class="card-header">8. User Tanpa Role</div>
             <div class="card-body">
+                <?php render_rbac_filter_form('user_no_role_search', '#rbac-user-no-role-section', (string) ($filters['user_no_role_search'] ?? ''), 'user_no_role_page'); ?>
                 <?php if (!empty($userNoRolePagination['data'])): ?>
                     <table class="table sortable-table">
                         <thead>
@@ -444,7 +453,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                     </table>
                     <?php render_rbac_pagination($userNoRolePagination, 'user_no_role_page', 'user_no_role_per_page', '#rbac-user-no-role-section'); ?>
                 <?php else: ?>
-                    <div class="muted">Tidak ada user tanpa role.</div>
+                    <div class="muted">Tidak ada data yang cocok.</div>
                 <?php endif; ?>
             </div>
         </div>
@@ -458,6 +467,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
         <div class="card" id="rbac-inactive-role-section">
             <div class="card-header">9. Role Nonaktif Tapi Masih Dipakai</div>
             <div class="card-body">
+                <?php render_rbac_filter_form('inactive_role_search', '#rbac-inactive-role-section', (string) ($filters['inactive_role_search'] ?? ''), 'inactive_role_page'); ?>
                 <?php if (!empty($inactiveRolePagination['data'])): ?>
                     <table class="table sortable-table">
                         <thead>
@@ -481,7 +491,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                     </table>
                     <?php render_rbac_pagination($inactiveRolePagination, 'inactive_role_page', 'inactive_role_per_page', '#rbac-inactive-role-section'); ?>
                 <?php else: ?>
-                    <div class="muted">Tidak ada role nonaktif yang masih dipakai user.</div>
+                    <div class="muted">Tidak ada data yang cocok.</div>
                 <?php endif; ?>
             </div>
         </div>
@@ -491,6 +501,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
         <div class="card" id="rbac-inactive-permission-section">
             <div class="card-header">10. Permission Nonaktif Tapi Masih Dipakai</div>
             <div class="card-body">
+                <?php render_rbac_filter_form('inactive_permission_search', '#rbac-inactive-permission-section', (string) ($filters['inactive_permission_search'] ?? ''), 'inactive_permission_page'); ?>
                 <?php if (!empty($inactivePermissionPagination['data'])): ?>
                     <table class="table sortable-table">
                         <thead>
@@ -514,7 +525,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                     </table>
                     <?php render_rbac_pagination($inactivePermissionPagination, 'inactive_permission_page', 'inactive_permission_per_page', '#rbac-inactive-permission-section'); ?>
                 <?php else: ?>
-                    <div class="muted">Tidak ada permission nonaktif yang masih dipakai role.</div>
+                    <div class="muted">Tidak ada data yang cocok.</div>
                 <?php endif; ?>
             </div>
         </div>

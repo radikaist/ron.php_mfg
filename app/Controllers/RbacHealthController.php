@@ -29,48 +29,82 @@ class RbacHealthController extends Controller
 
         $routePage = max(1, (int) ($_GET['route_page'] ?? 1));
         $routePerPage = (int) ($_GET['route_per_page'] ?? 5);
+        $routeSearch = trim($_GET['route_search'] ?? '');
 
         $permissionRoutePage = max(1, (int) ($_GET['permission_route_page'] ?? 1));
         $permissionRoutePerPage = (int) ($_GET['permission_route_per_page'] ?? 5);
+        $permissionRouteSearch = trim($_GET['permission_route_search'] ?? '');
 
         $controllerCheckPage = max(1, (int) ($_GET['controller_check_page'] ?? 1));
         $controllerCheckPerPage = (int) ($_GET['controller_check_per_page'] ?? 5);
+        $controllerCheckSearch = trim($_GET['controller_check_search'] ?? '');
 
         $mismatchPage = max(1, (int) ($_GET['mismatch_page'] ?? 1));
         $mismatchPerPage = (int) ($_GET['mismatch_per_page'] ?? 5);
+        $mismatchSearch = trim($_GET['mismatch_search'] ?? '');
 
         $controllerMissingPage = max(1, (int) ($_GET['controller_missing_page'] ?? 1));
         $controllerMissingPerPage = (int) ($_GET['controller_missing_per_page'] ?? 5);
+        $controllerMissingSearch = trim($_GET['controller_missing_search'] ?? '');
 
         $unusedPermissionPage = max(1, (int) ($_GET['unused_permission_page'] ?? 1));
         $unusedPermissionPerPage = (int) ($_GET['unused_permission_per_page'] ?? 5);
+        $unusedPermissionSearch = trim($_GET['unused_permission_search'] ?? '');
 
         $roleNoPermissionPage = max(1, (int) ($_GET['role_no_permission_page'] ?? 1));
         $roleNoPermissionPerPage = (int) ($_GET['role_no_permission_per_page'] ?? 5);
+        $roleNoPermissionSearch = trim($_GET['role_no_permission_search'] ?? '');
 
         $userNoRolePage = max(1, (int) ($_GET['user_no_role_page'] ?? 1));
         $userNoRolePerPage = (int) ($_GET['user_no_role_per_page'] ?? 5);
+        $userNoRoleSearch = trim($_GET['user_no_role_search'] ?? '');
 
         $inactiveRolePage = max(1, (int) ($_GET['inactive_role_page'] ?? 1));
         $inactiveRolePerPage = (int) ($_GET['inactive_role_per_page'] ?? 5);
+        $inactiveRoleSearch = trim($_GET['inactive_role_search'] ?? '');
 
         $inactivePermissionPage = max(1, (int) ($_GET['inactive_permission_page'] ?? 1));
         $inactivePermissionPerPage = (int) ($_GET['inactive_permission_per_page'] ?? 5);
+        $inactivePermissionSearch = trim($_GET['inactive_permission_search'] ?? '');
+
+        $routesWithoutPermission = $health->filterArrayByKeyword($health->routesWithoutPermission(), $routeSearch);
+        $permissionsWithoutRoute = $health->filterArrayByKeyword($health->permissionsWithoutRoute(), $permissionRouteSearch);
+        $controllerActionsWithoutPermissionCheck = $health->filterArrayByKeyword($health->controllerActionsWithoutPermissionCheck(), $controllerCheckSearch);
+        $permissionMismatchInControllers = $health->filterArrayByKeyword($health->permissionMismatchInControllers(), $mismatchSearch);
+        $controllerPermissionNotRegistered = $health->filterArrayByKeyword($health->controllerPermissionNotRegistered(), $controllerMissingSearch);
+        $registeredButUnusedPermissions = $health->filterArrayByKeyword($health->registeredButUnusedPermissions(), $unusedPermissionSearch);
+        $rolesWithoutPermission = $health->filterArrayByKeyword($health->rolesWithoutPermission(), $roleNoPermissionSearch);
+        $usersWithoutRole = $health->filterArrayByKeyword($health->usersWithoutRole(), $userNoRoleSearch);
+        $inactiveRolesUsed = $health->filterArrayByKeyword($health->inactiveRolesStillAssigned(), $inactiveRoleSearch);
+        $inactivePermissionsUsed = $health->filterArrayByKeyword($health->inactivePermissionsStillAssigned(), $inactivePermissionSearch);
 
         $this->view('rbac/health', [
             'title' => 'RBAC Health Check',
             'summary' => $health->summary(),
 
-            'routesWithoutPermissionPagination' => $health->paginateArray($health->routesWithoutPermission(), $routePage, $routePerPage),
-            'permissionsWithoutRoutePagination' => $health->paginateArray($health->permissionsWithoutRoute(), $permissionRoutePage, $permissionRoutePerPage),
-            'controllerActionsWithoutPermissionCheckPagination' => $health->paginateArray($health->controllerActionsWithoutPermissionCheck(), $controllerCheckPage, $controllerCheckPerPage),
-            'permissionMismatchInControllersPagination' => $health->paginateArray($health->permissionMismatchInControllers(), $mismatchPage, $mismatchPerPage),
-            'controllerPermissionNotRegisteredPagination' => $health->paginateArray($health->controllerPermissionNotRegistered(), $controllerMissingPage, $controllerMissingPerPage),
-            'registeredButUnusedPermissionsPagination' => $health->paginateArray($health->registeredButUnusedPermissions(), $unusedPermissionPage, $unusedPermissionPerPage),
-            'rolesWithoutPermissionPagination' => $health->paginateArray($health->rolesWithoutPermission(), $roleNoPermissionPage, $roleNoPermissionPerPage),
-            'usersWithoutRolePagination' => $health->paginateArray($health->usersWithoutRole(), $userNoRolePage, $userNoRolePerPage),
-            'inactiveRolesUsedPagination' => $health->paginateArray($health->inactiveRolesStillAssigned(), $inactiveRolePage, $inactiveRolePerPage),
-            'inactivePermissionsUsedPagination' => $health->paginateArray($health->inactivePermissionsStillAssigned(), $inactivePermissionPage, $inactivePermissionPerPage),
+            'routesWithoutPermissionPagination' => $health->paginateArray($routesWithoutPermission, $routePage, $routePerPage),
+            'permissionsWithoutRoutePagination' => $health->paginateArray($permissionsWithoutRoute, $permissionRoutePage, $permissionRoutePerPage),
+            'controllerActionsWithoutPermissionCheckPagination' => $health->paginateArray($controllerActionsWithoutPermissionCheck, $controllerCheckPage, $controllerCheckPerPage),
+            'permissionMismatchInControllersPagination' => $health->paginateArray($permissionMismatchInControllers, $mismatchPage, $mismatchPerPage),
+            'controllerPermissionNotRegisteredPagination' => $health->paginateArray($controllerPermissionNotRegistered, $controllerMissingPage, $controllerMissingPerPage),
+            'registeredButUnusedPermissionsPagination' => $health->paginateArray($registeredButUnusedPermissions, $unusedPermissionPage, $unusedPermissionPerPage),
+            'rolesWithoutPermissionPagination' => $health->paginateArray($rolesWithoutPermission, $roleNoPermissionPage, $roleNoPermissionPerPage),
+            'usersWithoutRolePagination' => $health->paginateArray($usersWithoutRole, $userNoRolePage, $userNoRolePerPage),
+            'inactiveRolesUsedPagination' => $health->paginateArray($inactiveRolesUsed, $inactiveRolePage, $inactiveRolePerPage),
+            'inactivePermissionsUsedPagination' => $health->paginateArray($inactivePermissionsUsed, $inactivePermissionPage, $inactivePermissionPerPage),
+
+            'filters' => [
+                'route_search' => $routeSearch,
+                'permission_route_search' => $permissionRouteSearch,
+                'controller_check_search' => $controllerCheckSearch,
+                'mismatch_search' => $mismatchSearch,
+                'controller_missing_search' => $controllerMissingSearch,
+                'unused_permission_search' => $unusedPermissionSearch,
+                'role_no_permission_search' => $roleNoPermissionSearch,
+                'user_no_role_search' => $userNoRoleSearch,
+                'inactive_role_search' => $inactiveRoleSearch,
+                'inactive_permission_search' => $inactivePermissionSearch,
+            ],
         ]);
     }
 

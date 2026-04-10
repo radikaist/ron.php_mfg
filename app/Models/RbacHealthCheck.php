@@ -65,6 +65,26 @@ class RbacHealthCheck extends Model
         ];
     }
 
+    public function filterArrayByKeyword(array $items, string $keyword): array
+    {
+        $keyword = trim(mb_strtolower($keyword));
+
+        if ($keyword === '') {
+            return $items;
+        }
+
+        return array_values(array_filter($items, function (array $item) use ($keyword): bool {
+            foreach ($item as $value) {
+                $text = mb_strtolower((string) $value);
+                if (str_contains($text, $keyword)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }));
+    }
+
     public function routesWithoutPermission(): array
     {
         $routes = require ROUTES_PATH . '/web.php';
