@@ -6,6 +6,7 @@ use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
 use App\Controllers\HomeController;
 use App\Controllers\PermissionController;
+use App\Controllers\RbacHealthController;
 use App\Controllers\RoleController;
 use App\Controllers\UserController;
 
@@ -15,6 +16,7 @@ require_once APP_PATH . '/Controllers/DashboardController.php';
 require_once APP_PATH . '/Controllers/UserController.php';
 require_once APP_PATH . '/Controllers/RoleController.php';
 require_once APP_PATH . '/Controllers/PermissionController.php';
+require_once APP_PATH . '/Controllers/RbacHealthController.php';
 
 return [
     ['GET', '/', [HomeController::class, 'index']],
@@ -41,4 +43,6 @@ return [
     ['POST', '/permissions/store', [PermissionController::class, 'store']],
     ['GET', '/permissions/edit', [PermissionController::class, 'edit']],
     ['POST', '/permissions/update', [PermissionController::class, 'update']],
+
+    ['GET', '/rbac/health', [RbacHealthController::class, 'index']],
 ];

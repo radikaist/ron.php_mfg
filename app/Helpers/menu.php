@@ -34,6 +34,13 @@ function sidebar_menu(): array
             'description' => 'Daftar izin akses',
         ],
         [
+            'title' => 'RBAC Health',
+            'url' => base_url('rbac/health'),
+            'permission' => 'permissions.view',
+            'icon' => '🩺',
+            'description' => 'Audit kesehatan RBAC',
+        ],
+        [
             'title' => 'Inventory',
             'url' => base_url('inventory'),
             'permission' => 'inventory.view',
