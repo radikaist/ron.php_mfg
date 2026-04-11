@@ -30,32 +30,30 @@ function severity_label(string $severity): string {
 
 function render_rbac_filter_form(string $searchKey, string $anchor, string $value, string $pageKey): void {
     ?>
-    <div class="toolbar" style="margin-bottom:16px;">
-        <form method="GET" action="<?= e(base_url('rbac/health')) . $anchor ?>" style="display:flex; gap:10px; flex-wrap:wrap; width:100%; align-items:center;">
-            <?php foreach ($_GET as $key => $val): ?>
-                <?php if ($key !== $searchKey && $key !== $pageKey): ?>
-                    <input type="hidden" name="<?= e((string) $key) ?>" value="<?= e((string) $val) ?>">
-                <?php endif; ?>
-            <?php endforeach; ?>
-
-            <div class="search-box">
-                <input
-                    type="text"
-                    class="form-control"
-                    name="<?= e($searchKey) ?>"
-                    value="<?= e($value) ?>"
-                    placeholder="Cari pada section ini..."
-                >
-            </div>
-
-            <input type="hidden" name="<?= e($pageKey) ?>" value="1">
-            <button type="submit" class="btn btn-primary">Cari</button>
-
-            <?php if ($value !== ''): ?>
-                <a href="<?= e(rbac_health_url([$searchKey => '', $pageKey => 1], $anchor)) ?>" class="btn-outline">Reset</a>
+    <form method="GET" action="<?= e(base_url('rbac/health')) . $anchor ?>" class="rbac-filter-form">
+        <?php foreach ($_GET as $key => $val): ?>
+            <?php if ($key !== $searchKey && $key !== $pageKey): ?>
+                <input type="hidden" name="<?= e((string) $key) ?>" value="<?= e((string) $val) ?>">
             <?php endif; ?>
-        </form>
-    </div>
+        <?php endforeach; ?>
+
+        <div class="rbac-filter-search">
+            <input
+                type="text"
+                class="form-control"
+                name="<?= e($searchKey) ?>"
+                value="<?= e($value) ?>"
+                placeholder="Cari pada section ini..."
+            >
+        </div>
+
+        <input type="hidden" name="<?= e($pageKey) ?>" value="1">
+        <button type="submit" class="btn btn-primary">Cari</button>
+
+        <?php if ($value !== ''): ?>
+            <a href="<?= e(rbac_health_url([$searchKey => '', $pageKey => 1], $anchor)) ?>" class="btn-outline">Reset</a>
+        <?php endif; ?>
+    </form>
     <?php
 }
 
@@ -66,7 +64,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
     $total = (int) ($pagination['total'] ?? 0);
     ?>
     <div class="pagination-wrap">
-        <form method="GET" action="<?= e(base_url('rbac/health')) . $anchor ?>" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <form method="GET" action="<?= e(base_url('rbac/health')) . $anchor ?>" class="rbac-page-size-form">
             <?php foreach ($_GET as $key => $value): ?>
                 <?php if ($key !== $pageKey && $key !== $perPageKey): ?>
                     <input type="hidden" name="<?= e((string) $key) ?>" value="<?= e((string) $value) ?>">
@@ -74,7 +72,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             <?php endforeach; ?>
 
             <label class="muted">Tampilkan</label>
-            <select name="<?= e($perPageKey) ?>" class="form-select" style="width:auto; min-width:90px;" onchange="this.form.submit()">
+            <select name="<?= e($perPageKey) ?>" class="form-select rbac-page-size-select" onchange="this.form.submit()">
                 <?php foreach ([5, 10, 20, 50, 100] as $size): ?>
                     <option value="<?= e((string) $size) ?>" <?= $perPage === $size ? 'selected' : '' ?>>
                         <?= e((string) $size) ?>
@@ -84,7 +82,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             <input type="hidden" name="<?= e($pageKey) ?>" value="1">
         </form>
 
-        <div class="muted">
+        <div class="muted rbac-page-info">
             Halaman <?= e((string) $currentPage) ?> dari <?= e((string) $totalPages) ?> • Total data <?= e((string) $total) ?>
         </div>
 
@@ -103,6 +101,49 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
     <?php
 }
 ?>
+
+<style>
+    .rbac-filter-form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .rbac-filter-search {
+        flex: 1 1 320px;
+        max-width: 420px;
+    }
+
+    .rbac-page-size-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .rbac-page-size-select {
+        width: auto;
+        min-width: 90px;
+    }
+
+    .rbac-page-info {
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .rbac-filter-search {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .rbac-filter-form .btn,
+        .rbac-filter-form .btn-outline {
+            width: auto;
+        }
+    }
+</style>
 
 <div class="toolbar" style="margin-bottom:22px;">
     <div class="muted">
