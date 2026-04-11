@@ -334,6 +334,62 @@ $toastError = flash_get('error');
         .content-subtitle { margin-top: 10px; color: var(--muted); font-size: 15px; }
         .content-body { padding: 0 28px 28px; }
 
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .quick-action {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px;
+            border-radius: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--card-shadow);
+            transition: .2s ease;
+            min-height: 92px;
+        }
+
+        .quick-action:hover {
+            transform: translateY(-2px);
+        }
+
+        .quick-action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 12px 22px rgba(59,130,246,.18);
+        }
+
+        .qa-blue { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
+        .qa-green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .qa-orange { background: linear-gradient(135deg, #f59e0b, #f97316); }
+        .qa-pink { background: linear-gradient(135deg, #ec4899, #8b5cf6); }
+
+        .quick-action-title {
+            font-weight: 800;
+            font-size: 15px;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .quick-action-desc {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
@@ -671,6 +727,7 @@ $toastError = flash_get('error');
 
         @media (max-width: 1200px) {
             .col-3, .col-4, .col-6 { grid-column: span 12; }
+            .quick-actions { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 900px) {
@@ -703,6 +760,10 @@ $toastError = flash_get('error');
             .table-search-box,
             .search-box {
                 max-width: 100%;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
             }
         }
     </style>
