@@ -67,6 +67,7 @@ ksort($groupedPermissions);
                                                     type="checkbox"
                                                     name="permission_ids[]"
                                                     value="<?= e($permissionId) ?>"
+                                                    data-permission-checkbox
                                                     <?= $isChecked ? 'checked' : '' ?>
                                                 >
                                                 <span class="checkbox-item-text">

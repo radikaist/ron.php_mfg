@@ -1110,14 +1110,65 @@ $toastError = flash_get('error');
                 });
             }
 
-            document.querySelectorAll('[data-confirm]').forEach(function (el) {
-                el.addEventListener('submit', function (e) {
-                    const message = el.getAttribute('data-confirm') || 'Apakah Anda yakin?';
-                    if (!window.confirm(message)) {
-                        e.preventDefault();
-                    }
-                });
+            document.querySelectorAll('[data-permission-panel]').forEach(function (panel) {
+    const getCheckboxes = function () {
+        return Array.from(panel.querySelectorAll('[data-permission-checkbox]'));
+    };
+
+    const counter = panel.querySelector('[data-permission-counter]');
+    const checkAllBtn = panel.querySelector('[data-check-all]');
+    const uncheckAllBtn = panel.querySelector('[data-uncheck-all]');
+
+    function updateCounter() {
+        const checkboxes = getCheckboxes();
+        const checkedCount = checkboxes.filter(function (checkbox) {
+            return checkbox.checked;
+        }).length;
+
+        if (counter) {
+            counter.textContent = checkedCount + ' permission dipilih';
+        }
+    }
+
+    if (checkAllBtn) {
+        checkAllBtn.addEventListener('click', function () {
+            const checkboxes = getCheckboxes();
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = true;
+                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
             });
+            updateCounter();
+        });
+    }
+
+    if (uncheckAllBtn) {
+        uncheckAllBtn.addEventListener('click', function () {
+            const checkboxes = getCheckboxes();
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = false;
+                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            updateCounter();
+        });
+    }
+
+    panel.addEventListener('change', function (event) {
+        if (event.target && event.target.matches('[data-permission-checkbox]')) {
+            updateCounter();
+        }
+    });
+
+    panel.querySelectorAll('[data-group-toggle]').forEach(function (toggle) {
+        toggle.addEventListener('click', function () {
+            const group = toggle.closest('.permission-group');
+            if (group) {
+                group.classList.toggle('collapsed');
+            }
+        });
+    });
+
+    updateCounter();
+});
 
             const toasts = document.querySelectorAll('.toast');
             if (toasts.length) {
