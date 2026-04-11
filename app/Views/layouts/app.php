@@ -106,9 +106,7 @@ $toastError = flash_get('error');
 
         body { min-height: 100vh; }
         a { text-decoration: none; color: inherit; }
-        button, input, select, textarea {
-            font: inherit;
-        }
+        button, input, select, textarea { font: inherit; }
 
         .layout { min-height: 100vh; }
 
@@ -280,15 +278,8 @@ $toastError = flash_get('error');
             border-left: 2px solid var(--line);
         }
 
-        .sidebar-submenu li {
-            margin: 8px 0 0 10px;
-        }
-
-        .sidebar-submenu a {
-            padding: 10px 12px;
-            font-size: 13px;
-            border-radius: 14px;
-        }
+        .sidebar-submenu li { margin: 8px 0 0 10px; }
+        .sidebar-submenu a { padding: 10px 12px; font-size: 13px; border-radius: 14px; }
 
         .menu-icon {
             width: 28px;
@@ -406,16 +397,55 @@ $toastError = flash_get('error');
 
         .card-body { padding: 22px; }
 
-        .toolbar {
+        .toolbar,
+        .table-toolbar {
             display: flex;
-            gap: 12px;
+            gap: 14px;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             margin-bottom: 18px;
         }
 
-        .search-box { width: 100%; max-width: 360px; }
+        .table-toolbar-left,
+        .table-toolbar-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .table-search-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .table-search-box,
+        .search-box {
+            width: 100%;
+            max-width: 360px;
+            flex: 1 1 280px;
+        }
+
+        .table-filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .table-pagination-info {
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .table-empty-state {
+            color: var(--muted);
+            padding: 12px 0;
+        }
 
         .form-label {
             display: block;
@@ -445,6 +475,8 @@ $toastError = flash_get('error');
         }
 
         .form-select {
+            width: auto;
+            min-width: 90px;
             padding-right: 40px;
             background-image:
                 linear-gradient(45deg, transparent 50%, var(--muted) 50%),
@@ -462,8 +494,6 @@ $toastError = flash_get('error');
             border-color: #93c5fd;
             box-shadow: 0 0 0 4px rgba(59,130,246,.12);
         }
-
-        .form-hint { margin-top: 6px; font-size: 12px; color: var(--muted); }
 
         .btn,
         .btn-outline {
@@ -659,9 +689,20 @@ $toastError = flash_get('error');
             .toast-wrap { left: 16px; right: 16px; top: 82px; }
             .toast { max-width: unset; min-width: unset; width: 100%; }
 
+            .table-toolbar,
+            .toolbar,
             .pagination-wrap {
                 align-items: flex-start;
                 flex-direction: column;
+            }
+
+            .table-search-form {
+                width: 100%;
+            }
+
+            .table-search-box,
+            .search-box {
+                max-width: 100%;
             }
         }
     </style>
