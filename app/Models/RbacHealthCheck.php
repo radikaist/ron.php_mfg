@@ -11,38 +11,61 @@ class RbacHealthCheck extends Model
 {
     public function summary(): array
     {
-        $routesWithoutPermission = count($this->routesWithoutPermission());
-        $permissionsWithoutRoute = count($this->permissionsWithoutRoute());
-        $rolesWithoutPermission = count($this->rolesWithoutPermission());
-        $usersWithoutRole = count($this->usersWithoutRole());
-        $inactiveRolesUsed = count($this->inactiveRolesStillAssigned());
-        $inactivePermissionsUsed = count($this->inactivePermissionsStillAssigned());
-        $controllerActionsWithoutPermissionCheck = count($this->controllerActionsWithoutPermissionCheck());
-        $permissionMismatch = count($this->permissionMismatchInControllers());
-        $controllerPermissionNotRegistered = count($this->controllerPermissionNotRegistered());
-        $registeredButUnusedPermissions = count($this->registeredButUnusedPermissions());
+        $routesWithoutPermission = $this->routesWithoutPermission();
+        $permissionsWithoutRoute = $this->permissionsWithoutRoute();
+        $rolesWithoutPermission = $this->rolesWithoutPermission();
+        $usersWithoutRole = $this->usersWithoutRole();
+        $inactiveRolesUsed = $this->inactiveRolesStillAssigned();
+        $inactivePermissionsUsed = $this->inactivePermissionsStillAssigned();
+        $controllerActionsWithoutPermissionCheck = $this->controllerActionsWithoutPermissionCheck();
+        $permissionMismatch = $this->permissionMismatchInControllers();
+        $controllerPermissionNotRegistered = $this->controllerPermissionNotRegistered();
+        $registeredButUnusedPermissions = $this->registeredButUnusedPermissions();
+
+        $allIssues = array_merge(
+            $routesWithoutPermission,
+            $permissionsWithoutRoute,
+            $rolesWithoutPermission,
+            $usersWithoutRole,
+            $inactiveRolesUsed,
+            $inactivePermissionsUsed,
+            $controllerActionsWithoutPermissionCheck,
+            $permissionMismatch,
+            $controllerPermissionNotRegistered,
+            $registeredButUnusedPermissions
+        );
+
+        $critical = 0;
+        $warning = 0;
+        $info = 0;
+
+        foreach ($allIssues as $issue) {
+            $severity = $issue['severity'] ?? 'info';
+
+            if ($severity === 'critical') {
+                $critical++;
+            } elseif ($severity === 'warning') {
+                $warning++;
+            } else {
+                $info++;
+            }
+        }
 
         return [
-            'routes_without_permission' => $routesWithoutPermission,
-            'permissions_without_route' => $permissionsWithoutRoute,
-            'roles_without_permission' => $rolesWithoutPermission,
-            'users_without_role' => $usersWithoutRole,
-            'inactive_roles_used' => $inactiveRolesUsed,
-            'inactive_permissions_used' => $inactivePermissionsUsed,
-            'controller_actions_without_permission_check' => $controllerActionsWithoutPermissionCheck,
-            'permission_mismatch_in_controllers' => $permissionMismatch,
-            'controller_permission_not_registered' => $controllerPermissionNotRegistered,
-            'registered_but_unused_permissions' => $registeredButUnusedPermissions,
-            'total_issues' => $routesWithoutPermission
-                + $permissionsWithoutRoute
-                + $rolesWithoutPermission
-                + $usersWithoutRole
-                + $inactiveRolesUsed
-                + $inactivePermissionsUsed
-                + $controllerActionsWithoutPermissionCheck
-                + $permissionMismatch
-                + $controllerPermissionNotRegistered
-                + $registeredButUnusedPermissions,
+            'routes_without_permission' => count($routesWithoutPermission),
+            'permissions_without_route' => count($permissionsWithoutRoute),
+            'roles_without_permission' => count($rolesWithoutPermission),
+            'users_without_role' => count($usersWithoutRole),
+            'inactive_roles_used' => count($inactiveRolesUsed),
+            'inactive_permissions_used' => count($inactivePermissionsUsed),
+            'controller_actions_without_permission_check' => count($controllerActionsWithoutPermissionCheck),
+            'permission_mismatch_in_controllers' => count($permissionMismatch),
+            'controller_permission_not_registered' => count($controllerPermissionNotRegistered),
+            'registered_but_unused_permissions' => count($registeredButUnusedPermissions),
+            'critical_issues' => $critical,
+            'warning_issues' => $warning,
+            'info_issues' => $info,
+            'total_issues' => count($allIssues),
         ];
     }
 
@@ -116,6 +139,7 @@ class RbacHealthCheck extends Model
 
             if (!in_array($suggestedCode, $permissionCodes, true)) {
                 $results[] = [
+                    'severity' => 'critical',
                     'method' => strtoupper($method),
                     'uri' => $uri,
                     'module' => $module,
@@ -167,9 +191,12 @@ class RbacHealthCheck extends Model
 
         $permissions = $stmt->fetchAll();
 
-        return array_values(array_filter($permissions, function (array $permission) use ($routeCodes): bool {
+        return array_values(array_map(function (array $permission): array {
+            $permission['severity'] = 'info';
+            return $permission;
+        }, array_filter($permissions, function (array $permission) use ($routeCodes): bool {
             return !in_array((string) $permission['code'], $routeCodes, true);
-        }));
+        })));
     }
 
     public function rolesWithoutPermission(): array
@@ -182,7 +209,10 @@ class RbacHealthCheck extends Model
             ORDER BY r.name ASC
         ");
 
-        return $stmt->fetchAll();
+        return array_map(function (array $row): array {
+            $row['severity'] = 'warning';
+            return $row;
+        }, $stmt->fetchAll());
     }
 
     public function usersWithoutRole(): array
@@ -195,7 +225,10 @@ class RbacHealthCheck extends Model
             ORDER BY u.name ASC
         ");
 
-        return $stmt->fetchAll();
+        return array_map(function (array $row): array {
+            $row['severity'] = 'warning';
+            return $row;
+        }, $stmt->fetchAll());
     }
 
     public function inactiveRolesStillAssigned(): array
@@ -213,7 +246,10 @@ class RbacHealthCheck extends Model
             ORDER BY r.name ASC
         ");
 
-        return $stmt->fetchAll();
+        return array_map(function (array $row): array {
+            $row['severity'] = 'warning';
+            return $row;
+        }, $stmt->fetchAll());
     }
 
     public function inactivePermissionsStillAssigned(): array
@@ -232,7 +268,10 @@ class RbacHealthCheck extends Model
             ORDER BY p.module ASC, p.name ASC
         ");
 
-        return $stmt->fetchAll();
+        return array_map(function (array $row): array {
+            $row['severity'] = 'warning';
+            return $row;
+        }, $stmt->fetchAll());
     }
 
     public function controllerActionsWithoutPermissionCheck(): array
@@ -243,6 +282,7 @@ class RbacHealthCheck extends Model
         foreach ($mappedRoutes as $item) {
             if (empty($item['actual_permissions'])) {
                 $results[] = [
+                    'severity' => 'critical',
                     'method' => $item['method'],
                     'uri' => $item['uri'],
                     'controller' => $item['controller'],
@@ -267,6 +307,7 @@ class RbacHealthCheck extends Model
 
             if (!in_array($item['expected_permission'], $item['actual_permissions'], true)) {
                 $results[] = [
+                    'severity' => 'warning',
                     'method' => $item['method'],
                     'uri' => $item['uri'],
                     'controller' => $item['controller'],
@@ -293,6 +334,7 @@ class RbacHealthCheck extends Model
 
                 if (!in_array($permission, $registeredCodes, true) && !isset($seen[$key])) {
                     $results[] = [
+                        'severity' => 'critical',
                         'method' => $item['method'],
                         'uri' => $item['uri'],
                         'controller' => $item['controller'],
@@ -330,9 +372,12 @@ class RbacHealthCheck extends Model
 
         $permissions = $stmt->fetchAll();
 
-        return array_values(array_filter($permissions, function (array $permission) use ($usedPermissions): bool {
+        return array_values(array_map(function (array $permission): array {
+            $permission['severity'] = 'info';
+            return $permission;
+        }, array_filter($permissions, function (array $permission) use ($usedPermissions): bool {
             return !in_array((string) $permission['code'], $usedPermissions, true);
-        }));
+        })));
     }
 
     public function autoGenerateFromRoutes(): array

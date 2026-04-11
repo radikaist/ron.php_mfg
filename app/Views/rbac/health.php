@@ -16,6 +16,18 @@ function rbac_health_url(array $overrides, string $anchor): string {
     return base_url('rbac/health?' . http_build_query($params)) . $anchor;
 }
 
+function severity_badge_class(string $severity): string {
+    return match ($severity) {
+        'critical' => 'badge-pink',
+        'warning' => 'badge-orange',
+        default => 'badge-sky',
+    };
+}
+
+function severity_label(string $severity): string {
+    return ucfirst($severity);
+}
+
 function render_rbac_filter_form(string $searchKey, string $anchor, string $value, string $pageKey): void {
     ?>
     <form method="GET" action="<?= e(base_url('rbac/health')) . $anchor ?>" style="display:flex; gap:10px; flex-wrap:wrap; width:100%; margin-bottom:16px;">
@@ -112,38 +124,38 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
 
 <div class="grid">
     <div class="col-3">
-        <div class="small-box bg-sky">
-            <div class="label">Total Issues</div>
-            <div class="value"><?= e((string) ($summary['total_issues'] ?? 0)) ?></div>
-            <div class="desc">Jumlah total temuan inkonsistensi RBAC.</div>
-            <div class="mini">Health Summary</div>
+        <div class="small-box bg-pink">
+            <div class="label">Critical</div>
+            <div class="value"><?= e((string) ($summary['critical_issues'] ?? 0)) ?></div>
+            <div class="desc">Masalah prioritas tinggi yang perlu segera ditangani.</div>
+            <div class="mini">Critical</div>
         </div>
     </div>
 
     <div class="col-3">
         <div class="small-box bg-orange">
-            <div class="label">Route Without Permission</div>
-            <div class="value"><?= e((string) ($summary['routes_without_permission'] ?? 0)) ?></div>
-            <div class="desc">Route yang belum punya permission.</div>
-            <div class="mini">Route Audit</div>
+            <div class="label">Warning</div>
+            <div class="value"><?= e((string) ($summary['warning_issues'] ?? 0)) ?></div>
+            <div class="desc">Masalah penting yang sebaiknya segera ditinjau.</div>
+            <div class="mini">Warning</div>
         </div>
     </div>
 
     <div class="col-3">
-        <div class="small-box bg-pink">
-            <div class="label">Mismatch in Controller</div>
-            <div class="value"><?= e((string) ($summary['permission_mismatch_in_controllers'] ?? 0)) ?></div>
-            <div class="desc">Expected permission berbeda dengan actual permission di controller.</div>
-            <div class="mini">Mismatch Audit</div>
+        <div class="small-box bg-sky">
+            <div class="label">Info</div>
+            <div class="value"><?= e((string) ($summary['info_issues'] ?? 0)) ?></div>
+            <div class="desc">Informasi audit yang berguna untuk perapihan sistem.</div>
+            <div class="mini">Info</div>
         </div>
     </div>
 
     <div class="col-3">
         <div class="small-box bg-green">
-            <div class="label">Controller Permission Missing</div>
-            <div class="value"><?= e((string) ($summary['controller_permission_not_registered'] ?? 0)) ?></div>
-            <div class="desc">Permission dipakai di controller tapi belum ada di database.</div>
-            <div class="mini">Registration Audit</div>
+            <div class="label">Total Issues</div>
+            <div class="value"><?= e((string) ($summary['total_issues'] ?? 0)) ?></div>
+            <div class="desc">Jumlah total semua temuan audit RBAC.</div>
+            <div class="mini">Health Summary</div>
         </div>
     </div>
 </div>
@@ -156,6 +168,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             <table class="table sortable-table">
                 <thead>
                     <tr>
+                        <th width="110">Severity</th>
                         <th width="100">Method</th>
                         <th>URI</th>
                         <th width="140">Module</th>
@@ -166,6 +179,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                 <tbody>
                     <?php foreach ($routePagination['data'] as $row): ?>
                         <tr>
+                            <td><span class="badge <?= e(severity_badge_class($row['severity'])) ?>"><?= e(severity_label($row['severity'])) ?></span></td>
                             <td><span class="badge badge-sky"><?= e($row['method']) ?></span></td>
                             <td><?= e($row['uri']) ?></td>
                             <td><span class="badge badge-orange"><?= e($row['module']) ?></span></td>
@@ -192,6 +206,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             <table class="table sortable-table">
                 <thead>
                     <tr>
+                        <th width="110">Severity</th>
                         <th width="100">Method</th>
                         <th>URI</th>
                         <th>Controller</th>
@@ -202,6 +217,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                 <tbody>
                     <?php foreach ($controllerCheckPagination['data'] as $row): ?>
                         <tr>
+                            <td><span class="badge <?= e(severity_badge_class($row['severity'])) ?>"><?= e(severity_label($row['severity'])) ?></span></td>
                             <td><span class="badge badge-sky"><?= e($row['method']) ?></span></td>
                             <td><?= e($row['uri']) ?></td>
                             <td><?= e($row['controller']) ?></td>
@@ -228,6 +244,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             <table class="table sortable-table">
                 <thead>
                     <tr>
+                        <th width="110">Severity</th>
                         <th width="100">Method</th>
                         <th>URI</th>
                         <th>Controller</th>
@@ -239,6 +256,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                 <tbody>
                     <?php foreach ($mismatchPagination['data'] as $row): ?>
                         <tr>
+                            <td><span class="badge <?= e(severity_badge_class($row['severity'])) ?>"><?= e(severity_label($row['severity'])) ?></span></td>
                             <td><?= e($row['method']) ?></td>
                             <td><?= e($row['uri']) ?></td>
                             <td><?= e($row['controller']) ?></td>
@@ -266,6 +284,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             <table class="table sortable-table">
                 <thead>
                     <tr>
+                        <th width="110">Severity</th>
                         <th width="100">Method</th>
                         <th>URI</th>
                         <th>Controller</th>
@@ -276,6 +295,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                 <tbody>
                     <?php foreach ($controllerMissingPagination['data'] as $row): ?>
                         <tr>
+                            <td><span class="badge <?= e(severity_badge_class($row['severity'])) ?>"><?= e(severity_label($row['severity'])) ?></span></td>
                             <td><?= e($row['method']) ?></td>
                             <td><?= e($row['uri']) ?></td>
                             <td><?= e($row['controller']) ?></td>
@@ -302,6 +322,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             <table class="table sortable-table">
                 <thead>
                     <tr>
+                        <th width="110">Severity</th>
                         <th width="80">ID</th>
                         <th>Nama</th>
                         <th>Code</th>
@@ -312,6 +333,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                 <tbody>
                     <?php foreach ($unusedPermissionPagination['data'] as $row): ?>
                         <tr>
+                            <td><span class="badge <?= e(severity_badge_class($row['severity'])) ?>"><?= e(severity_label($row['severity'])) ?></span></td>
                             <td><?= e((string) $row['id']) ?></td>
                             <td><?= e($row['name']) ?></td>
                             <td><?= e($row['code']) ?></td>
@@ -344,6 +366,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             <table class="table sortable-table">
                 <thead>
                     <tr>
+                        <th width="110">Severity</th>
                         <th width="80">ID</th>
                         <th>Nama</th>
                         <th>Code</th>
@@ -354,6 +377,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                 <tbody>
                     <?php foreach ($permissionRoutePagination['data'] as $row): ?>
                         <tr>
+                            <td><span class="badge <?= e(severity_badge_class($row['severity'])) ?>"><?= e(severity_label($row['severity'])) ?></span></td>
                             <td><?= e((string) $row['id']) ?></td>
                             <td><?= e($row['name']) ?></td>
                             <td><?= e($row['code']) ?></td>
@@ -388,6 +412,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                     <table class="table sortable-table">
                         <thead>
                             <tr>
+                                <th width="110">Severity</th>
                                 <th width="80">ID</th>
                                 <th>Nama</th>
                                 <th>Code</th>
@@ -397,6 +422,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                         <tbody>
                             <?php foreach ($roleNoPermissionPagination['data'] as $row): ?>
                                 <tr>
+                                    <td><span class="badge <?= e(severity_badge_class($row['severity'])) ?>"><?= e(severity_label($row['severity'])) ?></span></td>
                                     <td><?= e((string) $row['id']) ?></td>
                                     <td><?= e($row['name']) ?></td>
                                     <td><?= e($row['code']) ?></td>
@@ -428,6 +454,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                     <table class="table sortable-table">
                         <thead>
                             <tr>
+                                <th width="110">Severity</th>
                                 <th width="80">ID</th>
                                 <th>Nama</th>
                                 <th>Username</th>
@@ -437,6 +464,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                         <tbody>
                             <?php foreach ($userNoRolePagination['data'] as $row): ?>
                                 <tr>
+                                    <td><span class="badge <?= e(severity_badge_class($row['severity'])) ?>"><?= e(severity_label($row['severity'])) ?></span></td>
                                     <td><?= e((string) $row['id']) ?></td>
                                     <td><?= e($row['name']) ?></td>
                                     <td><?= e($row['username']) ?></td>
@@ -472,6 +500,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                     <table class="table sortable-table">
                         <thead>
                             <tr>
+                                <th width="110">Severity</th>
                                 <th width="80">ID</th>
                                 <th>Nama</th>
                                 <th>Code</th>
@@ -481,6 +510,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                         <tbody>
                             <?php foreach ($inactiveRolePagination['data'] as $row): ?>
                                 <tr>
+                                    <td><span class="badge <?= e(severity_badge_class($row['severity'])) ?>"><?= e(severity_label($row['severity'])) ?></span></td>
                                     <td><?= e((string) $row['id']) ?></td>
                                     <td><?= e($row['name']) ?></td>
                                     <td><?= e($row['code']) ?></td>
@@ -506,6 +536,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                     <table class="table sortable-table">
                         <thead>
                             <tr>
+                                <th width="110">Severity</th>
                                 <th width="80">ID</th>
                                 <th>Nama</th>
                                 <th>Code</th>
@@ -515,6 +546,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
                         <tbody>
                             <?php foreach ($inactivePermissionPagination['data'] as $row): ?>
                                 <tr>
+                                    <td><span class="badge <?= e(severity_badge_class($row['severity'])) ?>"><?= e(severity_label($row['severity'])) ?></span></td>
                                     <td><?= e((string) $row['id']) ?></td>
                                     <td><?= e($row['name']) ?></td>
                                     <td><?= e($row['code']) ?></td>
