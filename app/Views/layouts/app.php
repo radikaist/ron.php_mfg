@@ -354,9 +354,7 @@ $toastError = flash_get('error');
             min-height: 92px;
         }
 
-        .quick-action:hover {
-            transform: translateY(-2px);
-        }
+        .quick-action:hover { transform: translateY(-2px); }
 
         .quick-action-icon {
             width: 48px;
@@ -675,6 +673,145 @@ $toastError = flash_get('error');
             pointer-events: none;
         }
 
+        /* Permission panel */
+        .permission-tools {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .permission-tool-btn {
+            appearance: none;
+            -webkit-appearance: none;
+            border: none;
+            min-height: 42px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            color: #fff;
+            transition: .2s ease;
+        }
+
+        .permission-tool-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .permission-counter {
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            background: rgba(59,130,246,.08);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .permission-group-wrap {
+            display: grid;
+            gap: 14px;
+        }
+
+        .permission-group {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: rgba(255,255,255,.35);
+            overflow: hidden;
+        }
+
+        .permission-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            background: rgba(59,130,246,.06);
+        }
+
+        .permission-group-title {
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: capitalize;
+            color: var(--text);
+        }
+
+        .permission-group-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .permission-group-body {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .permission-group.collapsed .permission-group-body {
+            display: none;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: var(--card-bg);
+            cursor: pointer;
+            transition: .2s ease;
+        }
+
+        .checkbox-item:hover {
+            border-color: #93c5fd;
+            transform: translateY(-1px);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-top: 3px;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .checkbox-item-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .checkbox-item-title {
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        .checkbox-item-desc {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .checkbox-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text);
+        }
+
         .footer {
             margin-top: auto;
             min-height: var(--footer-height);
@@ -736,6 +873,7 @@ $toastError = flash_get('error');
             body.sidebar-open .sidebar { transform: translateX(0); }
             body.sidebar-open .sidebar-overlay { display: block; }
             .content-title { font-size: 32px; }
+            .permission-group-body { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 768px) {
@@ -764,6 +902,11 @@ $toastError = flash_get('error');
 
             .quick-actions {
                 grid-template-columns: 1fr;
+            }
+
+            .permission-tools {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
@@ -1025,6 +1168,56 @@ $toastError = flash_get('error');
                         asc = !asc;
                     });
                 });
+            });
+
+            document.querySelectorAll('[data-permission-panel]').forEach(function (panel) {
+                const checkboxes = Array.from(panel.querySelectorAll('input[type="checkbox"][name="permission_ids[]"]'));
+                const counter = panel.querySelector('[data-permission-counter]');
+                const checkAllBtn = panel.querySelector('[data-check-all]');
+                const uncheckAllBtn = panel.querySelector('[data-uncheck-all]');
+
+                function updateCounter() {
+                    const checkedCount = checkboxes.filter(function (checkbox) {
+                        return checkbox.checked;
+                    }).length;
+
+                    if (counter) {
+                        counter.textContent = checkedCount + ' permission dipilih';
+                    }
+                }
+
+                if (checkAllBtn) {
+                    checkAllBtn.addEventListener('click', function () {
+                        checkboxes.forEach(function (checkbox) {
+                            checkbox.checked = true;
+                        });
+                        updateCounter();
+                    });
+                }
+
+                if (uncheckAllBtn) {
+                    uncheckAllBtn.addEventListener('click', function () {
+                        checkboxes.forEach(function (checkbox) {
+                            checkbox.checked = false;
+                        });
+                        updateCounter();
+                    });
+                }
+
+                checkboxes.forEach(function (checkbox) {
+                    checkbox.addEventListener('change', updateCounter);
+                });
+
+                panel.querySelectorAll('[data-group-toggle]').forEach(function (toggle) {
+                    toggle.addEventListener('click', function () {
+                        const group = toggle.closest('.permission-group');
+                        if (group) {
+                            group.classList.toggle('collapsed');
+                        }
+                    });
+                });
+
+                updateCounter();
             });
         })();
     </script>
