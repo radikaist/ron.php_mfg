@@ -30,30 +30,32 @@ function severity_label(string $severity): string {
 
 function render_rbac_filter_form(string $searchKey, string $anchor, string $value, string $pageKey): void {
     ?>
-    <form method="GET" action="<?= e(base_url('rbac/health')) . $anchor ?>" style="display:flex; gap:10px; flex-wrap:wrap; width:100%; margin-bottom:16px;">
-        <?php foreach ($_GET as $key => $val): ?>
-            <?php if ($key !== $searchKey && $key !== $pageKey): ?>
-                <input type="hidden" name="<?= e((string) $key) ?>" value="<?= e((string) $val) ?>">
+    <div class="toolbar" style="margin-bottom:16px;">
+        <form method="GET" action="<?= e(base_url('rbac/health')) . $anchor ?>" style="display:flex; gap:10px; flex-wrap:wrap; width:100%; align-items:center;">
+            <?php foreach ($_GET as $key => $val): ?>
+                <?php if ($key !== $searchKey && $key !== $pageKey): ?>
+                    <input type="hidden" name="<?= e((string) $key) ?>" value="<?= e((string) $val) ?>">
+                <?php endif; ?>
+            <?php endforeach; ?>
+
+            <div class="search-box">
+                <input
+                    type="text"
+                    class="form-control"
+                    name="<?= e($searchKey) ?>"
+                    value="<?= e($value) ?>"
+                    placeholder="Cari pada section ini..."
+                >
+            </div>
+
+            <input type="hidden" name="<?= e($pageKey) ?>" value="1">
+            <button type="submit" class="btn btn-primary">Cari</button>
+
+            <?php if ($value !== ''): ?>
+                <a href="<?= e(rbac_health_url([$searchKey => '', $pageKey => 1], $anchor)) ?>" class="btn-outline">Reset</a>
             <?php endif; ?>
-        <?php endforeach; ?>
-
-        <div class="search-box">
-            <input
-                type="text"
-                class="form-control"
-                name="<?= e($searchKey) ?>"
-                value="<?= e($value) ?>"
-                placeholder="Cari pada section ini..."
-            >
-        </div>
-
-        <input type="hidden" name="<?= e($pageKey) ?>" value="1">
-        <button type="submit" class="btn btn-primary">Cari</button>
-
-        <?php if ($value !== ''): ?>
-            <a href="<?= e(rbac_health_url([$searchKey => '', $pageKey => 1], $anchor)) ?>" class="btn-outline">Reset</a>
-        <?php endif; ?>
-    </form>
+        </form>
+    </div>
     <?php
 }
 
@@ -72,7 +74,7 @@ function render_rbac_pagination(array $pagination, string $pageKey, string $perP
             <?php endforeach; ?>
 
             <label class="muted">Tampilkan</label>
-            <select name="<?= e($perPageKey) ?>" class="form-select" style="width:auto;" onchange="this.form.submit()">
+            <select name="<?= e($perPageKey) ?>" class="form-select" style="width:auto; min-width:90px;" onchange="this.form.submit()">
                 <?php foreach ([5, 10, 20, 50, 100] as $size): ?>
                     <option value="<?= e((string) $size) ?>" <?= $perPage === $size ? 'selected' : '' ?>>
                         <?= e((string) $size) ?>
