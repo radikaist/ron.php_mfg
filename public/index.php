@@ -17,12 +17,14 @@ require_once CORE_PATH . '/Env.php';
 session_name((string) env('SESSION_NAME', 'RONMFGSESSID'));
 session_start();
 
-require_once APP_PATH . '/Helpers/menu.php';
 require_once CORE_PATH . '/Database.php';
 require_once CORE_PATH . '/Model.php';
 require_once CORE_PATH . '/Controller.php';
 require_once CORE_PATH . '/View.php';
 require_once CORE_PATH . '/Auth.php';
+
+require_once APP_PATH . '/Helpers/menu.php';
+
 require_once CORE_PATH . '/App.php';
 
 $app = new \Core\App();
