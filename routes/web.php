@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
 use App\Controllers\HomeController;
+use App\Controllers\MenuController;
 use App\Controllers\PermissionController;
 use App\Controllers\RbacHealthController;
 use App\Controllers\RoleController;
@@ -17,6 +18,7 @@ require_once APP_PATH . '/Controllers/UserController.php';
 require_once APP_PATH . '/Controllers/RoleController.php';
 require_once APP_PATH . '/Controllers/PermissionController.php';
 require_once APP_PATH . '/Controllers/RbacHealthController.php';
+require_once APP_PATH . '/Controllers/MenuController.php';
 
 return [
     ['GET', '/', [HomeController::class, 'index']],
@@ -50,4 +52,6 @@ return [
     ['POST', '/rbac/health/auto-generate-routes', [RbacHealthController::class, 'autoGenerateRoutes']],
     ['POST', '/rbac/health/auto-generate-controller-permissions', [RbacHealthController::class, 'autoGenerateControllerPermissions']],
     ['GET', '/rbac/health/export-csv', [RbacHealthController::class, 'exportCsv']],
+
+    ['GET', '/menus', [MenuController::class, 'index']],
 ];

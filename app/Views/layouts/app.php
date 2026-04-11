@@ -74,7 +74,6 @@ $toastError = flash_get('error');
             --menu-item-hover: rgba(255,255,255,.88);
             --sidebar-card-bg: rgba(255,255,255,.76);
             --table-head-bg: rgba(239,246,255,.72);
-            --welcome-bg: linear-gradient(135deg, rgba(59,130,246,.10), rgba(6,182,212,.08), rgba(34,197,94,.07));
             --input-bg: rgba(255,255,255,.92);
         }
 
@@ -95,7 +94,6 @@ $toastError = flash_get('error');
             --menu-item-hover: rgba(255,255,255,.08);
             --sidebar-card-bg: rgba(255,255,255,.04);
             --table-head-bg: rgba(255,255,255,.05);
-            --welcome-bg: linear-gradient(135deg, rgba(59,130,246,.18), rgba(6,182,212,.10), rgba(34,197,94,.10));
             --input-bg: rgba(255,255,255,.04);
         }
 
@@ -274,6 +272,23 @@ $toastError = flash_get('error');
             box-shadow: 0 14px 24px rgba(59,130,246,.18);
         }
 
+        .sidebar-submenu {
+            list-style: none;
+            margin: 8px 0 0 18px;
+            padding: 0;
+            border-left: 2px solid var(--line);
+        }
+
+        .sidebar-submenu li {
+            margin: 8px 0 0 10px;
+        }
+
+        .sidebar-submenu a {
+            padding: 10px 12px;
+            font-size: 13px;
+            border-radius: 14px;
+        }
+
         .menu-icon {
             width: 28px;
             height: 28px;
@@ -327,47 +342,6 @@ $toastError = flash_get('error');
         .content-subtitle { margin-top: 10px; color: var(--muted); font-size: 15px; }
         .content-body { padding: 0 28px 28px; }
 
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 22px;
-        }
-
-        .quick-action {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-            padding: 18px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            transition: .2s ease;
-        }
-
-        .quick-action:hover { transform: translateY(-2px); }
-
-        .quick-action-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            color: #fff;
-            flex-shrink: 0;
-        }
-
-        .qa-blue { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
-        .qa-green { background: linear-gradient(135deg, #22c55e, #16a34a); }
-        .qa-orange { background: linear-gradient(135deg, #f59e0b, #f97316); }
-        .qa-pink { background: linear-gradient(135deg, #ec4899, #8b5cf6); }
-
-        .quick-action-title { font-weight: 800; font-size: 14px; color: var(--text); }
-        .quick-action-desc { color: var(--muted); font-size: 12px; margin-top: 4px; line-height: 1.5; }
-
         .grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
@@ -377,10 +351,7 @@ $toastError = flash_get('error');
 
         .col-3 { grid-column: span 3; }
         .col-4 { grid-column: span 4; }
-        .col-5 { grid-column: span 5; }
         .col-6 { grid-column: span 6; }
-        .col-7 { grid-column: span 7; }
-        .col-8 { grid-column: span 8; }
         .col-12 { grid-column: span 12; }
 
         .small-box {
@@ -444,65 +415,6 @@ $toastError = flash_get('error');
             margin-bottom: 18px;
         }
 
-        .search-box { width: 100%; max-width: 360px; }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--text);
-        }
-
-        .form-control, .form-select, .form-textarea {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            background: var(--input-bg);
-            color: var(--text);
-            outline: none;
-            transition: .2s ease;
-            font-size: 14px;
-        }
-
-        .form-control:focus, .form-select:focus, .form-textarea:focus {
-            border-color: #93c5fd;
-            box-shadow: 0 0 0 4px rgba(59,130,246,.12);
-        }
-
-        .form-hint { margin-top: 6px; font-size: 12px; color: var(--muted); }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border: none;
-            padding: 12px 18px;
-            border-radius: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            color: #fff;
-        }
-
-        .btn-primary { background: linear-gradient(90deg,#3b82f6,#06b6d4); }
-        .btn-success { background: linear-gradient(90deg,#22c55e,#16a34a); }
-        .btn-warning { background: linear-gradient(90deg,#f59e0b,#f97316); }
-        .btn-pink { background: linear-gradient(90deg,#ec4899,#8b5cf6); }
-
-        .btn-outline {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 18px;
-            border-radius: 14px;
-            border: 1px solid var(--line);
-            color: var(--text);
-            background: transparent;
-            font-weight: 700;
-        }
-
         .table {
             width: 100%;
             border-collapse: collapse;
@@ -546,45 +458,6 @@ $toastError = flash_get('error');
         .badge-pink { background: #fce7f3; color: #be185d; }
 
         .muted { color: var(--muted); }
-
-        .pagination-wrap {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 18px;
-        }
-
-        .pagination-links {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .page-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 40px;
-            padding: 10px 14px;
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            background: var(--card-bg);
-            color: var(--text);
-            font-weight: 700;
-        }
-
-        .page-link.active {
-            background: linear-gradient(90deg,#3b82f6,#06b6d4);
-            color: #fff;
-            border-color: transparent;
-        }
-
-        .page-link.disabled {
-            opacity: .45;
-            pointer-events: none;
-        }
 
         .footer {
             margin-top: auto;
@@ -637,8 +510,7 @@ $toastError = flash_get('error');
         body.sidebar-collapsed .main { margin-left: 0; }
 
         @media (max-width: 1200px) {
-            .quick-actions { grid-template-columns: repeat(2, 1fr); }
-            .col-3, .col-4, .col-5, .col-6, .col-7, .col-8 { grid-column: span 12; }
+            .col-3, .col-4, .col-6 { grid-column: span 12; }
         }
 
         @media (max-width: 900px) {
@@ -652,7 +524,6 @@ $toastError = flash_get('error');
         @media (max-width: 768px) {
             .topbar { padding: 12px 16px; }
             .brand { font-size: 24px; }
-            .quick-actions { grid-template-columns: 1fr; }
             .content-header, .content-body, .footer { padding-left: 16px; padding-right: 16px; }
             .footer { flex-direction: column; align-items: flex-start; }
             .toast-wrap { left: 16px; right: 16px; top: 82px; }
@@ -709,16 +580,36 @@ $toastError = flash_get('error');
                 <?php foreach ($menus as $menu): ?>
                     <?php
                     $menuPath = parse_url($menu['url'], PHP_URL_PATH) ?: '';
-                    $isActive = $menuPath === $currentPath;
+                    $isParentActive = $menuPath === $currentPath;
+                    $hasChildren = !empty($menu['children']);
                     ?>
                     <li>
-                        <a href="<?= e($menu['url']) ?>" class="<?= $isActive ? 'active' : '' ?>">
+                        <a href="<?= e($menu['url']) ?>" class="<?= $isParentActive ? 'active' : '' ?>">
                             <span class="menu-icon"><?= e($menu['icon'] ?? '•') ?></span>
                             <span class="menu-content">
                                 <span class="menu-title"><?= e($menu['title']) ?></span>
                                 <span class="menu-desc"><?= e($menu['description'] ?? '') ?></span>
                             </span>
                         </a>
+
+                        <?php if ($hasChildren): ?>
+                            <ul class="sidebar-submenu">
+                                <?php foreach ($menu['children'] as $child): ?>
+                                    <?php
+                                    $childPath = parse_url($child['url'], PHP_URL_PATH) ?: '';
+                                    $isChildActive = $childPath === $currentPath;
+                                    ?>
+                                    <li>
+                                        <a href="<?= e($child['url']) ?>" class="<?= $isChildActive ? 'active' : '' ?>">
+                                            <span class="menu-icon"><?= e($child['icon'] ?? '•') ?></span>
+                                            <span class="menu-content">
+                                                <span class="menu-title"><?= e($child['title']) ?></span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
                     </li>
                 <?php endforeach; ?>
             </ul>
@@ -860,7 +751,7 @@ $toastError = flash_get('error');
                         }, 300);
                     });
                 }, 2800);
-            });
+            }
 
             document.querySelectorAll('.sortable-table').forEach(function (table) {
                 const headers = table.querySelectorAll('thead th');
